@@ -8,12 +8,11 @@ namespace WhiteRabbitTelegram.Visitor
 {
     public interface IBaseVisitor
     {
-        Task Visit(CheckNFTCollectionHandler handler);
-        Task Visit(CheckWhiteCoinsHandler handler);
         Task Visit(EarnWBCoinsHandler handler);
         Task Visit(TopUsersHandler handler);
         Task Visit(PersonalAccountHandler handler);
         Task Visit(ReferralSystemHandler handler);
         Task Visit(RenewTelegramWalletHandler handler);
+        Task Visit(FirstSignHandler handler);
     }
 }

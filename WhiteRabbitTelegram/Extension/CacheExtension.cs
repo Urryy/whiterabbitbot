@@ -2,6 +2,6 @@
 
 public static class CacheExtension
 {
-    public static string GetCacheKeyNFT(Guid Id) => $"{Id}_NFT";
-    public static string GetCacheKeyJetton(Guid Id) => $"{Id}_JETTON";
+    public static string GetCacheKeyNFT(string wallet) => $"{wallet}_NFT";
+    public static string GetCacheKeyJetton(string wallet) => $"{wallet}_JETTON";
 }

@@ -83,4 +83,12 @@ public static class InlineKeyboardButtonMessage
             InlineKeyboardButton.WithCallbackData("Назад в Личный кабинет", UserCommands.BackIntoPersonalAccountCommand)
         }
     });
+
+    public static InlineKeyboardMarkup GetButtonEarnCoins() => new InlineKeyboardMarkup(new[]
+    {
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Добыть", UserCommands.EarnWBCoinsCommand),
+        }
+    });
 }

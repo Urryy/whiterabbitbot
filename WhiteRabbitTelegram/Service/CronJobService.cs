@@ -1,5 +1,6 @@
 ﻿using Hangfire;
 using Telegram.Bot;
+using WhiteRabbitTelegram.Keyboard;
 using WhiteRabbitTelegram.Repository;
 
 namespace WhiteRabbitTelegram.Service;
@@ -36,7 +37,7 @@ public class CronJobService : ICronJobService
             {
                 if(user.DateUpdated.AddHours(6) <= DateTime.UtcNow)
                 {
-                    await bot.SendTextMessageAsync(user.TelegramId, "Пора добывать монеты");
+                    await bot.SendTextMessageAsync(user.TelegramId, "Пора добывать монеты", replyMarkup: InlineKeyboardButtonMessage.GetButtonEarnCoins());
                 }
             }
         }

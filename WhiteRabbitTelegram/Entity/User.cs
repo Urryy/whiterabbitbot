@@ -35,7 +35,7 @@ public class User
 
     public void SetBalance(JettonsRecord? jettons)
     {
-        if (jettons != null && jettons.balances.Count != 0)
+        if (jettons != null && jettons.balances != null && jettons.balances.Count != 0)
         {
             var whiteCoinJetton = jettons.balances.FirstOrDefault(item => item.jetton.address.Contains("0:7e876e10133376dd9d443a51315d3cc36336b855d29545f27ffa77c131aff107"));
             if (whiteCoinJetton != null)

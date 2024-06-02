@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using TonSdk.Client;
 using WhiteRabbitTelegram.Command;
 using WhiteRabbitTelegram.Entity;
 using WhiteRabbitTelegram.Extension;
@@ -36,7 +37,7 @@ public class BaseVisitor : IBaseVisitor
         var jettonsString = await _httpClientService.GetJettons(wallet);
         var jettons = JsonConvert.DeserializeObject<JettonsRecord>(jettonsString);
         user.SetBalance(jettons);
-        _cache.Set(CacheExtension.GetCacheKeyJetton(user.Id), user.TokensWhiteCoin,
+        _cache.Set(CacheExtension.GetCacheKeyJetton(user.TelegramWallet), user.TokensWhiteCoin,
             new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(double.Parse(_configuration["ExpiresCache"]!))));
         await Task.CompletedTask;
     }
@@ -79,20 +80,8 @@ public class BaseVisitor : IBaseVisitor
                 }
             }
         }
-        _cache.Set(CacheExtension.GetCacheKeyNFT(user.Id), nftsEntities,
+        _cache.Set(CacheExtension.GetCacheKeyNFT(user.TelegramWallet), nftsEntities,
                         new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(double.Parse(_configuration["ExpiresCache"]!))));
-    }
-
-    public async Task Visit(CheckNFTCollectionHandler handler)
-    {
-        await SetNFTs(handler.wallet, handler.user);
-        await Task.CompletedTask;
-    }
-
-    public async Task Visit(CheckWhiteCoinsHandler handler)
-    {
-        await SetBalance(handler._wallet, handler.user);
-        await Task.CompletedTask;
     }
 
     public async Task Visit(EarnWBCoinsHandler handler)
@@ -105,7 +94,7 @@ public class BaseVisitor : IBaseVisitor
                 && handler.user.DateCreated.Minute == handler.user.DateUpdated.Minute && handler.user.DateCreated.Second == handler.user.DateUpdated.Second)
             {
                 var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
-                var tokens = (decimal)(0.01 * nfts.Count);
+                var tokens = (decimal)(0.01 * (nfts.Count == 0 ? 1 : nfts.Count));
                 var token = new TokenWС(tokens, handler.user.TelegramWallet!);
                 await repositoryWB.AddTokenWC(token);
                 await handler.bot.AnswerCallbackQueryAsync(chatId, $"Поздравляем!\n\nВы заработали свои первые {token.Tokens.ToString()} WB coins!", showAlert: true);
@@ -118,7 +107,7 @@ public class BaseVisitor : IBaseVisitor
                 if (diffDate.TotalHours >= 6)
                 {
                     var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
-                    var token = new TokenWС((decimal)(0.01 * nfts.Count), handler.user.TelegramWallet!);
+                    var token = new TokenWС((decimal)(0.01 * (nfts.Count == 0 ? 1 : nfts.Count)), handler.user.TelegramWallet!);
                     await repositoryWB.AddTokenWC(token);
                     await handler.bot.AnswerCallbackQueryAsync(chatId, $"Вы получили {token.Tokens.ToString()} WB coins!", showAlert: true);
                     handler.user.DateUpdated = DateTime.UtcNow;
@@ -225,13 +214,13 @@ public class BaseVisitor : IBaseVisitor
         {
             var chatId = await handler.upd.GetChatId();
 
-            if(!_cache.TryGetValue(CacheExtension.GetCacheKeyNFT(handler.user.Id), out List<NFT> nfts))
+            if(!_cache.TryGetValue(CacheExtension.GetCacheKeyNFT(handler.user.TelegramWallet), out List<NFT> nfts))
             {
                 await handler.bot.SendTextMessageAsync(chatId, BotCommands.AgainCheckNftCollectionCommand);
                 await SetNFTs(handler.user.TelegramWallet!, handler.user);
             }
 
-            if(!_cache.TryGetValue(CacheExtension.GetCacheKeyJetton(handler.user.Id), out decimal balance))
+            if(!_cache.TryGetValue(CacheExtension.GetCacheKeyJetton(handler.user.TelegramWallet), out decimal balance))
             {
                 await handler.bot.SendTextMessageAsync(chatId, BotCommands.CheckWhiteCoinsCommand);
                 await SetBalance(handler.user.TelegramWallet!, handler.user);
@@ -302,5 +291,32 @@ public class BaseVisitor : IBaseVisitor
             replyMarkup: InlineKeyboardButtonMessage.GetButtonChangeTelegramWallet());
 
         await Task.CompletedTask;
+    }
+
+    public async Task Visit(FirstSignHandler handler)
+    {
+        var chatId = await handler.upd.GetChatId();
+        handler.user.TelegramWallet = handler.wallet;
+
+        //Проверка кошелька и проверка на наличие NFT коллекции
+        handler.user.LastCommand = handler.user.CurrentCommand;
+        handler.user.CurrentCommand = UserCommands.CheckWhiteCoinsCommand;
+
+        await handler.bot.SendTextMessageAsync(chatId, BotCommands.CheckWhiteCoinsCommand);
+        await SetBalance(handler.wallet, handler.user);
+
+        handler.user.LastCommand = handler.user.CurrentCommand;
+        handler.user.CurrentCommand = UserCommands.CheckNFTCollectionCommand;
+
+        await handler.bot.SendTextMessageAsync(chatId, BotCommands.CheckNFTCollectionCommand);
+        await SetNFTs(handler.wallet, handler.user);
+
+        //Вывод сообщения о том, что есть ли бонусы при фарме токенов.
+        handler.user.LastCommand = handler.user.CurrentCommand;
+        handler.user.CurrentCommand = UserCommands.MainMenuCommand;
+
+        await handler.bot.SendTextMessageAsync(chatId, BotCommands.MainMenuCommand);
+        await Task.Delay(1000);
+        await handler.bot.SendTextMessageAsync(chatId, BotCommands.CardMainMenuCommand, replyMarkup: InlineKeyboardButtonMessage.GetButtonsMainMenu());
     }
 }
