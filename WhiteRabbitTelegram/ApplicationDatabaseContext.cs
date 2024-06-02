@@ -7,7 +7,7 @@ public class ApplicationDatabaseContext : DbContext
 {
     public DbSet<User> Users { get; set; }
 	public DbSet<NFT> NFTs { get; set; }
-	public DbSet<TokenWB> TokenWBs { get; set; }
+	public DbSet<TokenWС> TokenWCs { get; set; }
 	public ApplicationDatabaseContext(DbContextOptions<ApplicationDatabaseContext> options) : base(options)
 	{
 		Database.EnsureCreated();
@@ -17,6 +17,6 @@ public class ApplicationDatabaseContext : DbContext
 	{
 		modelBuilder.Entity<User>().HasKey(e => e.Id);
 		modelBuilder.Entity<NFT>().HasKey(e => e.Id);
-		modelBuilder.Entity<TokenWB>().HasKey(e => e.Id);
+		modelBuilder.Entity<TokenWС>().HasKey(e => e.Id);
 	}
 }

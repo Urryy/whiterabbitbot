@@ -39,6 +39,11 @@ public class UserRepository : IUserRepository
         return await _context.Users.FirstOrDefaultAsync(i => i.Id == id);
     }
 
+    public async Task<Entity.User> GetUserByTelegramWallet(string wallet)
+    {
+        return await _context.Users.FirstOrDefaultAsync(i => i.TelegramWallet == wallet);
+    }
+
     public async Task RemoveRangeUsers(List<Entity.User> users)
     {
         _context.Users.RemoveRange(users);

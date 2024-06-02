@@ -56,6 +56,10 @@ public static class InlineKeyboardButtonMessage
         },
         new[]
         {
+            InlineKeyboardButton.WithCallbackData("Изменить адрес кошелька", UserCommands.ChangeWalletAddressCommand)
+        },
+        new[]
+        {
             InlineKeyboardButton.WithCallbackData("Пригласить пользователя", UserCommands.ReferralLinkCommand)
         },
         new[]
@@ -69,6 +73,14 @@ public static class InlineKeyboardButtonMessage
         new[]
         {
             InlineKeyboardButton.WithCallbackData("Назад в главное меню", UserCommands.BackIntoMainMenu)
+        }
+    });
+
+    public static InlineKeyboardMarkup GetButtonChangeTelegramWallet() => new InlineKeyboardMarkup(new[]
+    {
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Назад в Личный кабинет", UserCommands.BackIntoPersonalAccountCommand)
         }
     });
 }

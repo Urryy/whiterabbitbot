@@ -55,20 +55,24 @@ public class BaseVisitor : IBaseVisitor
                 {
                     var _nftRepository = scope.ServiceProvider.GetRequiredService<INFTRepository>();
                     
-                    var nftsByUserId = (await _nftRepository.GetNFTsByUserId(user.Id)).ToList();
+                    var nftsByUserId = (await _nftRepository.GetNFTsByWallet(user.TelegramWallet)).ToList();
                     if(nftsByUserId.Count > 0)
                     {
                         user.CountNFT = 0;
                         await _nftRepository.RemoveRangeNfts(nftsByUserId);
                     }
 
+                    if(user.CountNFT == null)
+                    {
+                        user.CountNFT = 0;
+                    }
                     
                     foreach (var nft in nftsRecords.assets)
                     {
                         user.CountNFT += 1;
                         nftsEntities.Add(new NFT(nft.token_address, nft.contract_name, nft.contract_address, nft.token_id, nft.block_number, nft.minter, nft.owner,
                             nft.mint_timestamp, nft.mint_transaction_hash, nft.mint_price, nft.token_uri, nft.metadata_json, nft.name, nft.content_type, nft.content_uri,
-                            nft.image_uri, nft.description, user.Id));
+                            nft.image_uri, nft.description, user.TelegramWallet!));
                     }
                     await _nftRepository.AddRangeNft(nftsEntities);
                     
@@ -96,14 +100,14 @@ public class BaseVisitor : IBaseVisitor
         var chatId = await handler.upd.GetCallbackQueryId();
         using (var scope = _srvcProvider.CreateScope())
         {
-            
+            var nfts = await scope.ServiceProvider.GetRequiredService<INFTRepository>().GetNFTsByWallet(handler.user.TelegramWallet);
             if (DateTime.Compare(handler.user.DateCreated.Date, handler.user.DateUpdated.Date) == 0 && handler.user.DateCreated.Hour == handler.user.DateUpdated.Hour
                 && handler.user.DateCreated.Minute == handler.user.DateUpdated.Minute && handler.user.DateCreated.Second == handler.user.DateUpdated.Second)
             {
-                var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWBRepository>();
-                var tokens = (5000 * (handler.user.CountNFT ?? 1));
-                var token = new TokenWB(tokens, handler.user.Id);
-                await repositoryWB.AddTokenWB(token);
+                var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
+                var tokens = (decimal)(0.01 * nfts.Count);
+                var token = new TokenWС(tokens, handler.user.TelegramWallet!);
+                await repositoryWB.AddTokenWC(token);
                 await handler.bot.AnswerCallbackQueryAsync(chatId, $"Поздравляем!\n\nВы заработали свои первые {token.Tokens.ToString()} WB coins!", showAlert: true);
                 handler.user.DateUpdated = DateTime.UtcNow;
             }
@@ -113,9 +117,9 @@ public class BaseVisitor : IBaseVisitor
                 var diffDate = DateTime.UtcNow.Subtract(handler.user.DateUpdated);
                 if (diffDate.TotalHours >= 6)
                 {
-                    var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWBRepository>();
-                    var token = new TokenWB((5000 * handler.user.CountNFT ?? 1), handler.user.Id);
-                    await repositoryWB.AddTokenWB(token);
+                    var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
+                    var token = new TokenWС((decimal)(0.01 * nfts.Count), handler.user.TelegramWallet!);
+                    await repositoryWB.AddTokenWC(token);
                     await handler.bot.AnswerCallbackQueryAsync(chatId, $"Вы получили {token.Tokens.ToString()} WB coins!", showAlert: true);
                     handler.user.DateUpdated = DateTime.UtcNow;
                 }
@@ -141,13 +145,13 @@ public class BaseVisitor : IBaseVisitor
             using (var scope = _srvcProvider.CreateScope())
             {
                 var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var tokenWBRepository = scope.ServiceProvider.GetRequiredService<ITokenWBRepository>();
-                var tokens = (await tokenWBRepository.GetAllTokenWBs())
+                var tokenWBRepository = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
+                var tokens = (await tokenWBRepository.GetAllTokenWCs())
                     .Where(i => i.DateEarn >= DateTime.UtcNow.AddDays(-14))
-                    .GroupBy(k => k.UserId)
+                    .GroupBy(k => k.Wallet)
                     .Select(g => new
                     {
-                        UserId = g.Key,
+                        Wallet = g.Key,
                         TotalCoins = g.Sum(p => p.Tokens)
                     })
                     .OrderByDescending(s => s.TotalCoins)
@@ -156,14 +160,17 @@ public class BaseVisitor : IBaseVisitor
                 strBuild.AppendLine("Топ пользователей за две недели:");
                 foreach(var token in tokens)
                 {
-                    var user = await userRepository.GetUserById(token.UserId);
-                    if(user.Id == handler.user.Id && count > 10)
+                    var user = await userRepository.GetUserByTelegramWallet(token.Wallet);
+                    if(user != null)
                     {
-                        currUserInTop = false;
-                        placeInTop = count;
+                        if (user.Id == handler.user.Id && count > 10)
+                        {
+                            currUserInTop = false;
+                            placeInTop = count;
+                        }
+                        strBuild.AppendLine($"{count}. {user.Name} - {token.TotalCoins}");
+                        count++;
                     }
-                    strBuild.AppendLine($"{count}. {user.Name} - {token.TotalCoins}");
-                    count++;
                 }
                 if(currUserInTop == false)
                 {
@@ -177,12 +184,12 @@ public class BaseVisitor : IBaseVisitor
             using (var scope = _srvcProvider.CreateScope())
             {
                 var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var tokenWBRepository = scope.ServiceProvider.GetRequiredService<ITokenWBRepository>();
-                var tokens = (await tokenWBRepository.GetAllTokenWBs())
-                    .GroupBy(k => k.UserId)
+                var tokenWBRepository = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
+                var tokens = (await tokenWBRepository.GetAllTokenWCs())
+                    .GroupBy(k => k.Wallet)
                     .Select(g => new
                     {
-                        UserId = g.Key,
+                        Wallet = g.Key,
                         TotalCoins = g.Sum(p => p.Tokens)
                     })
                     .OrderByDescending(s => s.TotalCoins)
@@ -191,14 +198,17 @@ public class BaseVisitor : IBaseVisitor
                 strBuild.AppendLine("Топ пользователей:");
                 foreach(var token in tokens)
                 {
-                    var user = await userRepository.GetUserById(token.UserId);
-                    if(user.Id == handler.user.Id && count > 10)
+                    var user = await userRepository.GetUserByTelegramWallet(token.Wallet);
+                    if (user != null)
                     {
-                        currUserInTop = false;
-                        placeInTop = count;
+                        if (user.Id == handler.user.Id && count > 10)
+                        {
+                            currUserInTop = false;
+                            placeInTop = count;
+                        }
+                        strBuild.AppendLine($"{count}. {user.Name} - {token.TotalCoins}");
+                        count++;
                     }
-                    strBuild.AppendLine($"{count}. {user.Name} - {token.TotalCoins}");
-                    count++;
                 }
                 if (currUserInTop == false)
                 {
@@ -228,14 +238,14 @@ public class BaseVisitor : IBaseVisitor
             }
 
             var nftRepository = scope.ServiceProvider.GetRequiredService<INFTRepository>();
-            var tokenRepository = scope.ServiceProvider.GetRequiredService<ITokenWBRepository>();
+            var tokenRepository = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
 
-            var tokensByUserId = await tokenRepository.GetTokenWBByUserId(handler.user.Id);
-            var nftsByUserId = (await nftRepository.GetNFTsByUserId(handler.user.Id)).Count;
-            var message = $"Колличество ваших NFT: {nftsByUserId}\n\n" +
-                $"Колличество ваших WhiteCoins's: {Math.Round(handler.user.TokensWhiteCoin, 2)}\n\n" +
-                $"За все время вы добыли {tokensByUserId.Select(i => i.Tokens).Sum()} токенов WB\n\n" +
-                $"Колличество пользователей присоиденившихся по вашей реферальной ссылке: {handler.user.Referrals}";
+            var tokensByWallet = await tokenRepository.GetTokenWCByWallet(handler.user.TelegramWallet);
+            var nftsByWallet = (await nftRepository.GetNFTsByWallet(handler.user.TelegramWallet)).Count;
+            var message = $"Количество NFT: {nftsByWallet}\n\n" +
+                $"Количество купленных WhiteCoins: {Math.Round(handler.user.TokensWhiteCoin, 2)}\n\n" +
+                $"За все время вы добыли {tokensByWallet.Select(i => i.Tokens).Sum()} токенов WC\n\n" +
+                $"Количество пользователей присоиденившихся по вашей реферальной ссылке: {handler.user.Referrals}";
 
             await handler.bot.SendTextMessageAsync(chatId, message, replyMarkup: InlineKeyboardButtonMessage.GetButtonPersonalAccount());
         }
@@ -248,7 +258,7 @@ public class BaseVisitor : IBaseVisitor
             using (var scope = _srvcProvider.CreateScope())
             {
                 var userRep = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                var tokenWBRep = scope.ServiceProvider.GetRequiredService<ITokenWBRepository>();
+                var tokenWBRep = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
 
                 int startIndex = handler.textWithRefLink.IndexOf("whiterabbit");
                 if (startIndex >= 0)
@@ -257,15 +267,40 @@ public class BaseVisitor : IBaseVisitor
                     var userByRefLink = await userRep.GetUserByRef(result);
                     if(userByRefLink != null && handler.user.OwnReferralId != result)
                     {
-                        userByRefLink.Referrals += 1;
-                        var isPremium = await handler.upd.IsTelegramPremium();
-                        var wb = new TokenWB(isPremium ? 5000 : 1000, userByRefLink.Id);
-                        await tokenWBRep.AddTokenWB(wb);
-                        await userRep.UpdateUser(userByRefLink);
+                        if (userByRefLink.TelegramWallet != null)
+                        {
+                            userByRefLink.Referrals += 1;
+                            var isPremium = await handler.upd.IsTelegramPremium();
+                            var wb = new TokenWС(isPremium ? (decimal)0.01 : (decimal)0.02, userByRefLink.TelegramWallet);
+                            await tokenWBRep.AddTokenWC(wb);
+                            await userRep.UpdateUser(userByRefLink);
+                        }
                     }
                 }
             }
         }
+        await Task.CompletedTask;
+    }
+
+    public async Task Visit(RenewTelegramWalletHandler handler)
+    {
+        var chatId = await handler.upd.GetChatId();
+
+        handler.user.TelegramWallet = handler.wallet;
+
+        handler.user.LastCommand = handler.user.CurrentCommand;
+        handler.user.CurrentCommand = UserCommands.CheckNFTCollectionCommand;
+        await handler.bot.SendTextMessageAsync(chatId, BotCommands.CheckNFTCollectionCommand);
+        await SetNFTs(handler.wallet, handler.user);
+
+        handler.user.LastCommand = handler.user.CurrentCommand;
+        handler.user.CurrentCommand = UserCommands.CheckWhiteCoinsCommand;
+        await handler.bot.SendTextMessageAsync(chatId, BotCommands.CheckWhiteCoinsCommand);
+        await SetBalance(handler.wallet, handler.user);
+
+        await handler.bot.SendTextMessageAsync(chatId, "Вы успешно изменили свой адрес кошелька", 
+            replyMarkup: InlineKeyboardButtonMessage.GetButtonChangeTelegramWallet());
+
         await Task.CompletedTask;
     }
 }

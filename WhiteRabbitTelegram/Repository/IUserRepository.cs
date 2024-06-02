@@ -13,4 +13,5 @@ public interface IUserRepository
     Task<Entity.User> GetUserByTelegramId(long id);
     Task<Entity.User> GetUserById(Guid id);
     Task<Entity.User> GetUserByRef(string referral);
+    Task<Entity.User> GetUserByTelegramWallet(string wallet);
 }

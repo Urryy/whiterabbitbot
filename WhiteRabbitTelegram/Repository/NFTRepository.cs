@@ -29,9 +29,9 @@ public class NFTRepository : INFTRepository
         return _context.NFTs.AsQueryable();
     }
 
-    public async Task<List<NFT>> GetNFTsByUserId(Guid userId)
+    public async Task<List<NFT>> GetNFTsByWallet(string wallet)
     {
-        return _context.NFTs.Where(i => i.UserId == userId).ToList();
+        return _context.NFTs.Where(i => i.Wallet == wallet).ToList();
     }
 
     public async Task RemoveRangeNfts(List<NFT> nfts)

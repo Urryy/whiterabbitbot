@@ -3,7 +3,7 @@
 public class NFT
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public Guid UserId { get; set; }
+    public string Wallet { get; set; }
     public string? TokenAddress { get; set; }
     public string? ContractName { get; set; }
     public string? ContractAddress { get; set; }
@@ -28,7 +28,7 @@ public class NFT
     }
     public NFT(string? tokenAddress, string? contractName, string? contractAddress, string? tokenId, long? blockNumber, string? minter,
         string? owner, long? mintTimestamp, string? mintTransactionHash, decimal? mintPrice, string? tokenUri, string? metadataJson, string? name,
-        string? contentType, string? contentUri, string? imageUri, string? description, Guid userId) : this()
+        string? contentType, string? contentUri, string? imageUri, string? description, string wallet) : this()
     {
         TokenAddress = tokenAddress;
         ContractName = contractName;
@@ -47,6 +47,6 @@ public class NFT
         ContentUri = contentUri;
         ImageUri = imageUri;
         Description = description;
-        UserId = userId;
+        Wallet = wallet;
     }
 }

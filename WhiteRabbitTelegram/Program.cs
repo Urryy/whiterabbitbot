@@ -20,7 +20,7 @@ builder.Services.AddTransient<TelegramBot>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<ITelegramBotService, TelegramBotService>();
 builder.Services.AddTransient<INFTRepository, NFTRepository>();
-builder.Services.AddTransient<ITokenWBRepository, TokenWBRepository>();
+builder.Services.AddTransient<ITokenWCRepository, TokenWCRepository>();
 builder.Services.AddTransient<IBaseVisitor, BaseVisitor>();
 builder.Services.AddTransient<IHttpClientService, HttpClientService>();
 builder.Services.AddTransient<ICronJobService, CronJobService>();
@@ -35,7 +35,7 @@ app.UseHangfireDashboard();
 
 app.UseHttpsRedirection();
 
-app.Services.GetRequiredService<ICronJobService>().DoJob("0 0 * * * *");
+app.Services.GetRequiredService<ICronJobService>().DoJob("0 */15 * * * *");
 app.Services.GetRequiredService<TelegramBot>().Start();
 
 app.UseRouting();

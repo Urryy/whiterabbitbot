@@ -44,6 +44,10 @@ public class User
                 TokensWhiteCoin = (value / 1000000000);
             }
         }
+        else
+        {
+            TokensWhiteCoin = 0;
+        }
     }
 }
 

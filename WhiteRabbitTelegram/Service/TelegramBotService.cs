@@ -77,7 +77,7 @@ public class TelegramBotService : ITelegramBotService
                 user.LastCommand = currCommand;
             }
 
-            if (text == BotCommands.StartCommand)
+            if (text == UserCommands.StartCommand)
             {
                 if (user.IsFirstSign)
                 {
@@ -118,7 +118,7 @@ public class TelegramBotService : ITelegramBotService
                 var earnHandler = new EarnWBCoinsHandler(user, bot, upd);
                 await earnHandler.Accept(_visitor);
             }
-            else if(text == UserCommands.PersonalAccountCommand)
+            else if(text == UserCommands.PersonalAccountCommand || text == UserCommands.BackIntoPersonalAccountCommand)
             {
                 var personalAccountHandler = new PersonalAccountHandler(bot, upd, user);
                 await personalAccountHandler.Accept(_visitor);
@@ -139,6 +139,25 @@ public class TelegramBotService : ITelegramBotService
                     replyMarkup: InlineKeyboardButtonMessage.GetButtonReferralLink());
                 user.LastCommand = user.CurrentCommand;
                 user.CurrentCommand = text;
+            }
+            else if(text == UserCommands.ChangeWalletAddressCommand)
+            {
+                await bot.SendTextMessageAsync(chatId, "Введите новый адрес кошелька💳");
+                user.LastCommand = user.CurrentCommand;
+                user.CurrentCommand = UserCommands.ConnectNewWalletAddressCommand;
+            }
+            else if (user.CurrentCommand == UserCommands.ConnectNewWalletAddressCommand)
+            {
+                var wallet = text;
+                if (string.IsNullOrEmpty(wallet))
+                {
+                    await bot.SendTextMessageAsync(chatId, "Вы ввели некорректный адрес кошелька.\n\nВведите корректный адрес кошелька.");
+                }
+                else
+                {
+                    var handler = new RenewTelegramWalletHandler(user, bot, upd, wallet);
+                    await handler.Accept(_visitor);
+                }
             }
 
             await userRepository.UpdateUser(user);

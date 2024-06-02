@@ -14,5 +14,6 @@ namespace WhiteRabbitTelegram.Visitor
         Task Visit(TopUsersHandler handler);
         Task Visit(PersonalAccountHandler handler);
         Task Visit(ReferralSystemHandler handler);
+        Task Visit(RenewTelegramWalletHandler handler);
     }
 }

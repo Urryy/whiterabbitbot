@@ -1,20 +1,20 @@
 ﻿namespace WhiteRabbitTelegram.Entity;
 
-public class TokenWB
+public class TokenWС
 {
     public Guid Id { get; set; } = Guid.NewGuid();
-    public Guid UserId { get; set; }
+    public string Wallet { get; set; }
     public decimal Tokens { get; set; }
     public DateTime DateEarn { get; set; } = DateTime.UtcNow;
 
-    protected TokenWB()
+    protected TokenWС()
     {
 
     }
 
-    public TokenWB(decimal tokens, Guid userId) : this()
+    public TokenWС(decimal tokens, string wallet) : this()
     {
         Tokens = tokens;
-        UserId = userId;
+        Wallet = wallet;
     }
 }
