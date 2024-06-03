@@ -7,6 +7,7 @@ using WhiteRabbitTelegram.Service;
 using WhiteRabbitTelegram.Visitor;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseKestrel();
 
 string conn = builder.Configuration.GetConnectionString("DefaultConnection")!;
 builder.Services.AddDbContext<ApplicationDatabaseContext>(opt => opt.UseSqlServer(conn));
