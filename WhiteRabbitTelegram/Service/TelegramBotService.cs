@@ -27,6 +27,7 @@ public class TelegramBotService : ITelegramBotService
     {
         try
         {
+            return;
             var chatId = await upd.GetChatId();
             var text = await upd.GetText();
             if (chatId == 0 || string.IsNullOrEmpty(text))
