@@ -10,8 +10,8 @@ public class User
     public Guid Id { get; set; } = Guid.NewGuid();
     public long TelegramId { get; set; } = default!;
     public string Name { get; set; } = default!;
-    public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-    public DateTime DateUpdated { get; set; } = DateTime.UtcNow;
+    public DateTime DateCreated { get; set; } = DateTime.Now;
+    public DateTime DateUpdated { get; set; } = DateTime.Now;
     public string? TelegramWallet { get; set; } = default!;
     public int? CountNFT { get; set; } = default!;
     public decimal TokensWhiteCoin { get; set; } = 0;
@@ -20,6 +20,7 @@ public class User
     public string LastCommand { get; set; } = UserCommands.StartCommand;
     public string OwnReferralId { get; set; }
     public bool IsFirstSign { get; set; } = true;
+    public int? LastMessageId { get; set; }
 
     protected User()
     {

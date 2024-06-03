@@ -6,6 +6,9 @@ using WhiteRabbitTelegram.Repository;
 using WhiteRabbitTelegram.Service;
 using WhiteRabbitTelegram.Visitor;
 
+
+var date = DateTime.Now;
+var str = date.ToString("t");
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseKestrel();
 

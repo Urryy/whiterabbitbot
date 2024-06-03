@@ -11,11 +11,13 @@ public class PersonalAccountHandler : IBaseHandler
     public ITelegramBotClient bot;
     public Update upd;
     public Entity.User user;
-    public PersonalAccountHandler(ITelegramBotClient bot, Update upd, Entity.User user)
+    public bool isReplaceMessage;
+    public PersonalAccountHandler(ITelegramBotClient bot, Update upd, Entity.User user, bool isReplaceMessage)
     {
         this.bot = bot;
         this.upd = upd;
         this.user = user;
+        this.isReplaceMessage = isReplaceMessage;
     }
 
     public async Task Accept(IBaseVisitor visitor)

@@ -25,19 +25,25 @@ public class TelegramBotService : ITelegramBotService
 
     public async Task Start(ITelegramBotClient bot, Update upd)
     {
-        var chatId = await upd.GetChatId();
-        var text = await upd.GetText();
-        if(chatId == 0 || string.IsNullOrEmpty(text))
+        try
         {
-            await bot.SendTextMessageAsync(chatId, "При обработке вашего сообщения что-то пошло не так");
-            await Task.CompletedTask;
+            var chatId = await upd.GetChatId();
+            var text = await upd.GetText();
+            if (chatId == 0 || string.IsNullOrEmpty(text))
+            {
+                await bot.SendTextMessageAsync(chatId, "При обработке вашего сообщения что-то пошло не так");
+                await Task.CompletedTask;
+            }
+            else
+            {
+                await ExecuteCommand(chatId, text, bot, upd);
+                await Task.CompletedTask;
+            }
         }
-        else
+        catch (Exception)
         {
-            await ExecuteCommand(chatId, text, bot, upd);
             await Task.CompletedTask;
-        }
-        
+        } 
     }
 
     private async Task ExecuteCommand(long chatId, string text, ITelegramBotClient bot, Update upd)
@@ -66,13 +72,13 @@ public class TelegramBotService : ITelegramBotService
                 {
                     var referralHandler = new ReferralSystemHandler(user, text, bot, upd);
                     await referralHandler.Accept(_visitor);
-                    await bot.SendTextMessageAsync(chatId, BotCommands.ConnectWalletCommand);
+                    await bot.SendMessage(upd, user, BotCommands.ConnectWalletCommand, true);
                     user.LastCommand = user.CurrentCommand;
                     user.CurrentCommand = UserCommands.ConnectWalletCommand;
                 }
                 else
                 {
-                    await bot.SendTextMessageAsync(chatId, BotCommands.CardMainMenuCommand, replyMarkup: InlineKeyboardButtonMessage.GetButtonsMainMenu());
+                    await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand,true, InlineKeyboardButtonMessage.GetButtonsMainMenu());
                     user.CurrentCommand = UserCommands.MainMenuCommand;
                     user.LastCommand = UserCommands.MainMenuCommand;
                 }
@@ -82,7 +88,7 @@ public class TelegramBotService : ITelegramBotService
                 var wallet = text;
                 if (string.IsNullOrEmpty(wallet))
                 {
-                    await bot.SendTextMessageAsync(chatId, "Вы ввели некорректный адрес кошелька.\n\nВведите корректный адрес кошелька.");
+                    await bot.SendMessage(upd, user, "Вы ввели некорректный адрес кошелька.\n\nВведите корректный адрес кошелька.", false);
                 }
                 else
                 {
@@ -93,7 +99,7 @@ public class TelegramBotService : ITelegramBotService
             }
             else if (text == UserCommands.MainMenuCommand || text == UserCommands.BackIntoMainMenu)
             {
-                await bot.SendTextMessageAsync(chatId, BotCommands.CardMainMenuCommand, replyMarkup: InlineKeyboardButtonMessage.GetButtonsMainMenu());
+                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, text == UserCommands.MainMenuCommand ? false:true, InlineKeyboardButtonMessage.GetButtonsMainMenu());
                 user.CurrentCommand = UserCommands.MainMenuCommand;
                 user.LastCommand = UserCommands.MainMenuCommand;
             }
@@ -101,13 +107,20 @@ public class TelegramBotService : ITelegramBotService
             {
                 var earnHandler = new EarnWBCoinsHandler(user, bot, upd);
                 await earnHandler.Accept(_visitor);
-                await bot.SendTextMessageAsync(chatId, BotCommands.CardMainMenuCommand, replyMarkup: InlineKeyboardButtonMessage.GetButtonsMainMenu());
+                user.CurrentCommand = UserCommands.MainMenuCommand;
+                user.LastCommand = UserCommands.MainMenuCommand;
+            }
+            else if(text == UserCommands.EarnWBCoinsByNotificationCommand)
+            {
+                var earnHandler = new EarnWBCoinsHandler(user, bot, upd);
+                await earnHandler.Accept(_visitor);
+                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, text == UserCommands.MainMenuCommand ? false : true, InlineKeyboardButtonMessage.GetButtonsMainMenu());
                 user.CurrentCommand = UserCommands.MainMenuCommand;
                 user.LastCommand = UserCommands.MainMenuCommand;
             }
             else if (text == UserCommands.PersonalAccountCommand || text == UserCommands.BackIntoPersonalAccountCommand)
             {
-                var personalAccountHandler = new PersonalAccountHandler(bot, upd, user);
+                var personalAccountHandler = new PersonalAccountHandler(bot, upd, user, text == UserCommands.PersonalAccountCommand ? true : false);
                 await personalAccountHandler.Accept(_visitor);
                 user.LastCommand = user.CurrentCommand;
                 user.CurrentCommand = text;
@@ -121,15 +134,14 @@ public class TelegramBotService : ITelegramBotService
             }
             else if (text == UserCommands.ReferralLinkCommand)
             {
-                await bot.SendTextMessageAsync(chatId, $"Ваша реферальная ссылка - https://t.me/WhiteRabbitCoinBot?start=whiterabbit{user.OwnReferralId} ❤️‍🔥 \n\n" +
-                    $"За каждого приглашенного пользователя 1000WB, а за пользователя Telegram Premium 5000WB",
-                    replyMarkup: InlineKeyboardButtonMessage.GetButtonReferralLink());
+                await bot.SendMessage(upd, user, $"Ваша реферальная ссылка - https://t.me/RabbitClubBot?start=whiterabbit{user.OwnReferralId} ❤️‍🔥 \n\n" +
+                    $"За каждого приглашенного пользователя 0.01 WC, а за пользователя Telegram Premium 0.02 WC", true, InlineKeyboardButtonMessage.GetButtonReferralLink());
                 user.LastCommand = user.CurrentCommand;
                 user.CurrentCommand = text;
             }
             else if (text == UserCommands.ChangeWalletAddressCommand)
             {
-                await bot.SendTextMessageAsync(chatId, "Введите новый адрес кошелька💳");
+                await bot.SendMessage(upd, user, "Введите новый адрес кошелька💳", true);
                 user.LastCommand = user.CurrentCommand;
                 user.CurrentCommand = UserCommands.ConnectNewWalletAddressCommand;
             }
@@ -138,7 +150,7 @@ public class TelegramBotService : ITelegramBotService
                 var wallet = text;
                 if (string.IsNullOrEmpty(wallet))
                 {
-                    await bot.SendTextMessageAsync(chatId, "Вы ввели некорректный адрес кошелька.\n\nВведите корректный адрес кошелька.");
+                    await bot.SendMessage(upd, user, "Вы ввели некорректный адрес кошелька.\n\nВведите корректный адрес кошелька.", true);
                 }
                 else
                 {

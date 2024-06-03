@@ -14,6 +14,7 @@ public class UserCommands
     public static string MainMenuCommand = "main_menu";
     //MainMenu commands
     public static string EarnWBCoinsCommand = "EarnWBCoinsCommand";
+    public static string EarnWBCoinsByNotificationCommand = "EarnWBCoinsByNotificationCommand";
     public static string TopUsersCommand = "TopUsersCommand";
     public static string TopUsersForAllTheTime = "TopUsersForAllTheTime";
     public static string PersonalAccountCommand = "PersonalAccountCommand";
@@ -31,7 +32,7 @@ public class BotCommands
     public static string ConnectWalletCommand = "Пожалуйста, введите ваш TON space address 💳\n\nЭто делается для проверки ваших NFT и начисление бонусных токенов.";
     public static string CheckWhiteCoinsCommand = "Проверяем количество ваших WhiteCoin's🫰🏻";
     public static string CheckNFTCollectionCommand = "Проверяем вашу коллекцию NFT для начисления бонусных токенов.💫";
-    public static string AgainCheckNftCollectionCommand = "Проверям Количество ваших NFT💫";
+    public static string AgainCheckNftCollectionCommand = "Проверям количество ваших NFT💫";
     public static string MainMenuCommand = "Переводим вас на главное меню.";
     public static string CardMainMenuCommand = "Добывай монеты до релиза игры 🐇\n\n\tГлавное меню ";
     //MainMenu commands

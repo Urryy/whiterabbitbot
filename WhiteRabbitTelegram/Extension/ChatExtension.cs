@@ -1,6 +1,10 @@
-﻿using Telegram.Bot;
+﻿using System.Runtime.CompilerServices;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
+using TonSdk.Client;
+using TonSdk.Core.Block;
 
 namespace WhiteRabbitTelegram.Extension;
 
@@ -61,6 +65,77 @@ public static class ChatExtension
         else
         {
             return false;
+        }
+    }
+
+    //public static async Task SendMessage(this ITelegramBotClient bot, Update upd, Entity.User user, string text, InlineKeyboardMarkup buttons = null) 
+    //{
+    //    var chatId = await upd.GetChatId();
+    //    if (upd.Type == UpdateType.CallbackQuery)
+    //    {
+    //        if(user.LastMessageId != null)
+    //        {
+    //            if (buttons != null)
+    //            {
+    //                await bot.EditMessageTextAsync(user.LastMessageId, text, replyMarkup: buttons);
+    //            }
+    //            else
+    //            {
+    //                await bot.EditMessageTextAsync(user.LastMessageId, text);
+    //            }
+    //        }
+    //        else
+    //        {
+    //            if (buttons != null)
+    //            {
+    //                await bot.SendTextMessageAsync(chatId, text, replyMarkup: buttons);
+    //            }
+    //            else
+    //            {
+    //                await bot.SendTextMessageAsync(chatId, text);
+    //            }
+    //        }
+    //        await bot.EditMessageTextAsync(chatId, chatId, "This message has been edited!");
+    //        user.LastMessageId = upd.CallbackQuery.InlineMessageId;
+    //    }
+    //    else
+    //    {
+    //        if (buttons != null)
+    //        {
+    //            await bot.SendTextMessageAsync(chatId, text, replyMarkup: buttons);
+    //        }
+    //        else
+    //        {
+    //            await bot.SendTextMessageAsync(chatId, text);
+    //        }
+    //        user.LastMessageId = null;
+    //    }
+    //}
+
+    public static async Task SendMessage(this ITelegramBotClient bot, Update upd, Entity.User user, string text, bool isEdit, InlineKeyboardMarkup buttons = null)
+    {
+        var chatId = await upd.GetChatId();
+        if(user.LastMessageId != null && isEdit)
+        {
+            if (buttons != null)
+            {
+                await bot.EditMessageTextAsync(chatId, user.LastMessageId.Value, text, replyMarkup: buttons);
+            }
+            else
+            {
+                await bot.EditMessageTextAsync(chatId, user.LastMessageId.Value, text);
+            }
+        }
+        else
+        {
+            if (buttons != null)
+            {
+                user.LastMessageId = (await bot.SendTextMessageAsync(chatId, text, replyMarkup: buttons)).MessageId;
+            }
+            else
+            {
+                user.LastMessageId = (await bot.SendTextMessageAsync(chatId, text)).MessageId;
+            }
         }
     }
 }

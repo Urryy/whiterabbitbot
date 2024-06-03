@@ -88,7 +88,7 @@ public static class InlineKeyboardButtonMessage
     {
         new[]
         {
-            InlineKeyboardButton.WithCallbackData("Добыть", UserCommands.EarnWBCoinsCommand),
+            InlineKeyboardButton.WithCallbackData("Добыть", UserCommands.EarnWBCoinsByNotificationCommand),
         }
     });
 }

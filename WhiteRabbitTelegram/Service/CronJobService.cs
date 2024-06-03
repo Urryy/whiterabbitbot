@@ -35,7 +35,7 @@ public class CronJobService : ICronJobService
             var users = await userRepository.GetAllUsers();
             foreach (var user in users)
             {
-                if(user.DateUpdated.AddHours(6) <= DateTime.UtcNow)
+                if(user.DateUpdated.AddHours(6) <= DateTime.Now)
                 {
                     await bot.SendTextMessageAsync(user.TelegramId, "Пора добывать монеты", replyMarkup: InlineKeyboardButtonMessage.GetButtonEarnCoins());
                 }
