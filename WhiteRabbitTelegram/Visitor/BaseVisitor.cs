@@ -284,7 +284,7 @@ public class BaseVisitor : IBaseVisitor
                         {
                             userByRefLink.Referrals += 1;
                             var isPremium = await handler.upd.IsTelegramPremium();
-                            var wb = new TokenWС(isPremium ? (decimal)0.01 : (decimal)0.02, userByRefLink.TelegramWallet);
+                            var wb = new TokenWС(isPremium ? (decimal)0.02 : (decimal)0.01, userByRefLink.TelegramWallet);
                             await tokenWBRep.AddTokenWC(wb);
                             await userRep.UpdateUser(userByRefLink);
                         }
