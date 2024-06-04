@@ -165,7 +165,11 @@ public class BaseVisitor : IBaseVisitor
                             currUserInTop = false;
                             placeInTop = count;
                         }
-                        strBuild.AppendLine($"{count}. {user.Name} - {token.TotalCoins}");
+
+                        if (count < 16)
+                        {
+                            strBuild.AppendLine($"{count}. {user.Name} - {token.TotalCoins}");
+                        }
                         count++;
                     }
                 }
@@ -204,7 +208,7 @@ public class BaseVisitor : IBaseVisitor
                             placeInTop = count;
                         }
 
-                        if (count <= 16)
+                        if (count < 16)
                         {
                             strBuild.AppendLine($"{count}. {user.Name} - {token.TotalCoins}");
                         }
