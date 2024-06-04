@@ -49,7 +49,7 @@ public class HttpClientService : IHttpClientService
         var httpClient = new HttpClient() { BaseAddress = baseAddress };
         httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer AHYP6LLV5SB6LJAAAAAGUZKP2FIYBPDB5AHBM5JC25CAEMLSHO2KLXTHAORWSEKYVDMY6CQ");
 
-        var uriForAddress = new Uri("https://tonapi.io/v2/accounts/UQDRwaP2RkYxPCLjQt8b-WGhKmBAxYNI76jcLRTPsu1O3LM3");
+        var uriForAddress = new Uri($"https://tonapi.io/v2/accounts/{baseWallet}");
         var addresss = await httpClient.GetAsync(uriForAddress)
                         .Result.Content.ReadAsStringAsync();
 
