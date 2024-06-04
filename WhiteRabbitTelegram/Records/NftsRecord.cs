@@ -14,7 +14,7 @@ public record Nft(string? token_address, string? contract_name, string? contract
 
 public record NftsItemsRecord(NftItem[] nft_items);
 
-public record NftItem(string? address, long? index, Owner owner, Collection collection, bool? verified, Metadata metadata, string? trust);
+public record NftItem(string? address, long? index, Owner? owner, Collection? collection, bool? verified, Metadata? metadata, string? trust);
 
 public record Owner(string? address, string? name, bool? is_scam, bool? is_wallet);
 

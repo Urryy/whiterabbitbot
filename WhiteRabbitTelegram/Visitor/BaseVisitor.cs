@@ -63,11 +63,10 @@ public class BaseVisitor : IBaseVisitor
                 if (nfts != null && nfts.nft_items != null && nfts.nft_items.Length != 0)
                 {
 
-                    var nftsRecords = nfts.nft_items.Where(item => item.collection.address == "0:7fbad883641b9681058689bf125765d855b5b2f0a56c45a4cc4fb95ad10e55f2");
+                    var nftsRecords = nfts.nft_items.Where(item => item.collection != null && item.collection.address != null &&
+                    item.collection.address == "0:7fbad883641b9681058689bf125765d855b5b2f0a56c45a4cc4fb95ad10e55f2");
                     if (nftsRecords.Count() > 0)
                     {
-                        
-
                         if (user.CountNFT == null)
                         {
                             user.CountNFT = 0;
@@ -75,10 +74,18 @@ public class BaseVisitor : IBaseVisitor
 
                         foreach (var nft in nftsRecords)
                         {
-                            user.CountNFT += 1;
-                            nftsEntities.Add(new NFT(nft.address, nft.collection.name, nft.address, nft.address, nft.index, nft.owner.name, nft.owner.address,
-                                nft.index, nft.metadata.description, decimal.One, nft.metadata.image, nft.collection.description, nft.metadata.name, nft.collection.name, nft.metadata.marketplace,
-                                nft.metadata.image, nft.collection.description, user.TelegramWallet!));
+                            try
+                            {
+                                user.CountNFT += 1;
+                                nftsEntities.Add(new NFT(nft.address, nft.collection?.name, nft.address, nft.address, nft.index, nft.owner?.name, nft.owner?.address,
+                                    nft.index, nft.metadata?.name, decimal.One, nft.metadata?.image, nft.collection?.name, nft.metadata?.name, nft.collection?.name, nft.metadata?.marketplace,
+                                    nft.metadata?.image, nft.collection?.name, user.TelegramWallet!));
+                            }
+                            catch (Exception)
+                            {
+                                continue;
+                            }
+                            
                         }
                         await _nftRepository.AddRangeNft(nftsEntities);
                     }
