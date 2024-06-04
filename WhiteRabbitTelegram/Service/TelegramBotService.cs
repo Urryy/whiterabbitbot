@@ -114,7 +114,7 @@ public class TelegramBotService : ITelegramBotService
             {
                 var earnHandler = new EarnWBCoinsHandler(user, bot, upd);
                 await earnHandler.Accept(_visitor);
-                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, text == UserCommands.MainMenuCommand ? false : true, InlineKeyboardButtonMessage.GetButtonsMainMenu());
+                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu());
                 user.CurrentCommand = UserCommands.MainMenuCommand;
                 user.LastCommand = UserCommands.MainMenuCommand;
             }
@@ -158,7 +158,7 @@ public class TelegramBotService : ITelegramBotService
                     await handler.Accept(_visitor);
                 }
             }
-
+            user.TelegramId = chatId;
             await userRepository.UpdateUser(user);
         }
     }

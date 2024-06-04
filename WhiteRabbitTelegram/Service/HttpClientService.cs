@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http;
 using TonSdk.Client;
+using WhiteRabbitTelegram.Records;
 
 namespace WhiteRabbitTelegram.Service;
 
@@ -39,5 +41,27 @@ public class HttpClientService : IHttpClientService
             return await client.GetAsync(url)
                 .Result.Content.ReadAsStringAsync();
         }
+    }
+
+    public async Task<string> GetNFTsFromTONAPI(string baseWallet)
+    {
+        var baseAddress = new Uri("https://tonapi.io/");
+        var httpClient = new HttpClient() { BaseAddress = baseAddress };
+        httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer AHYP6LLV5SB6LJAAAAAGUZKP2FIYBPDB5AHBM5JC25CAEMLSHO2KLXTHAORWSEKYVDMY6CQ");
+
+        var uriForAddress = new Uri("https://tonapi.io/v2/accounts/UQDRwaP2RkYxPCLjQt8b-WGhKmBAxYNI76jcLRTPsu1O3LM3");
+        var addresss = await httpClient.GetAsync(uriForAddress)
+                        .Result.Content.ReadAsStringAsync();
+
+        var wallet = JsonConvert.DeserializeObject<AddressWallet>(addresss);
+
+        if(wallet != null && wallet.address != null)
+        {
+            var uri = new Uri($"https://tonapi.io/v2/accounts/{wallet.address}/nfts");
+
+            return await httpClient.GetAsync(uri)
+                            .Result.Content.ReadAsStringAsync();
+        }
+        return string.Empty;
     }
 }

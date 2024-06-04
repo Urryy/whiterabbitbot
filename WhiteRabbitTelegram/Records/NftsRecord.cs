@@ -11,3 +11,13 @@ public record Nft(string? token_address, string? contract_name, string? contract
     string? metadata_json, string? name, string? content_type, string? content_uri, string? image_uri, string? description);
 
 
+
+public record NftsItemsRecord(NftItem[] nft_items);
+
+public record NftItem(string? address, long? index, Owner owner, Collection collection, bool? verified, Metadata metadata, string? trust);
+
+public record Owner(string? address, string? name, bool? is_scam, bool? is_wallet);
+
+public record Collection(string? address, string? name, string? description);
+
+public record Metadata(string? image, string? description, string? marketplace, string? name);

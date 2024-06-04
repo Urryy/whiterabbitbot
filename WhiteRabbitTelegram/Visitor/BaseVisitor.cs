@@ -44,42 +44,45 @@ public class BaseVisitor : IBaseVisitor
 
     private async Task SetNFTs(string wallet, Entity.User user)
     {
-        var nftsString = await _httpClientService.GetNFTs(wallet);
-        var nfts = JsonConvert.DeserializeObject<NftsRecord>(nftsString);
         var nftsEntities = new List<NFT>();
-        if (nfts != null && nfts.code == 200 && nfts.data.Length != 0)
+        var nftsString = await _httpClientService.GetNFTsFromTONAPI(wallet);
+        if (!string.IsNullOrEmpty(nftsString))
         {
-            using (var scope = _srvcProvider.CreateScope())
+            var nfts = JsonConvert.DeserializeObject<NftsItemsRecord>(nftsString);
+            if (nfts != null && nfts.nft_items != null && nfts.nft_items.Length != 0)
             {
-                var nftsRecords = nfts.data.FirstOrDefault(item => item.contract_address == "EQB_utiDZBuWgQWGib8SV2XYVbWy8KVsRaTMT7la0Q5V8jP4");
-                if (nftsRecords != null)
+                using (var scope = _srvcProvider.CreateScope())
                 {
-                    var _nftRepository = scope.ServiceProvider.GetRequiredService<INFTRepository>();
-                    
-                    var nftsByUserId = (await _nftRepository.GetNFTsByWallet(user.TelegramWallet)).ToList();
-                    if(nftsByUserId.Count > 0)
+                    var nftsRecords = nfts.nft_items.Where(item => item.collection.address == "0:7fbad883641b9681058689bf125765d855b5b2f0a56c45a4cc4fb95ad10e55f2");
+                    if(nftsRecords.Count() > 0)
                     {
-                        user.CountNFT = 0;
-                        await _nftRepository.RemoveRangeNfts(nftsByUserId);
-                    }
+                        var _nftRepository = scope.ServiceProvider.GetRequiredService<INFTRepository>();
 
-                    if(user.CountNFT == null)
-                    {
-                        user.CountNFT = 0;
+                        var nftsByUserId = (await _nftRepository.GetNFTsByWallet(user.TelegramWallet)).ToList();
+                        if (nftsByUserId.Count > 0)
+                        {
+                            user.CountNFT = 0;
+                            await _nftRepository.RemoveRangeNfts(nftsByUserId);
+                        }
+
+                        if (user.CountNFT == null)
+                        {
+                            user.CountNFT = 0;
+                        }
+
+                        foreach (var nft in nftsRecords)
+                        {
+                            user.CountNFT += 1;
+                            nftsEntities.Add(new NFT(nft.address, nft.collection.name, nft.address, nft.address, nft.index, nft.owner.name, nft.owner.address,
+                                nft.index, nft.metadata.description, decimal.One, nft.metadata.image, nft.collection.description, nft.metadata.name, nft.collection.name, nft.metadata.marketplace,
+                                nft.metadata.image, nft.collection.description, user.TelegramWallet!));
+                        }
+                        await _nftRepository.AddRangeNft(nftsEntities);
                     }
-                    
-                    foreach (var nft in nftsRecords.assets)
-                    {
-                        user.CountNFT += 1;
-                        nftsEntities.Add(new NFT(nft.token_address, nft.contract_name, nft.contract_address, nft.token_id, nft.block_number, nft.minter, nft.owner,
-                            nft.mint_timestamp, nft.mint_transaction_hash, nft.mint_price, nft.token_uri, nft.metadata_json, nft.name, nft.content_type, nft.content_uri,
-                            nft.image_uri, nft.description, user.TelegramWallet!));
-                    }
-                    await _nftRepository.AddRangeNft(nftsEntities);
-                    
                 }
             }
         }
+        
         _cache.Set(CacheExtension.GetCacheKeyNFT(user.TelegramWallet), nftsEntities,
                         new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(double.Parse(_configuration["ExpiresCache"]!))));
     }
