@@ -46,24 +46,27 @@ public class BaseVisitor : IBaseVisitor
     {
         var nftsEntities = new List<NFT>();
         var nftsString = await _httpClientService.GetNFTsFromTONAPI(wallet);
-        if (!string.IsNullOrEmpty(nftsString))
+        using (var scope = _srvcProvider.CreateScope())
         {
-            var nfts = JsonConvert.DeserializeObject<NftsItemsRecord>(nftsString);
-            if (nfts != null && nfts.nft_items != null && nfts.nft_items.Length != 0)
-            {
-                using (var scope = _srvcProvider.CreateScope())
-                {
-                    var nftsRecords = nfts.nft_items.Where(item => item.collection.address == "0:7fbad883641b9681058689bf125765d855b5b2f0a56c45a4cc4fb95ad10e55f2");
-                    if(nftsRecords.Count() > 0)
-                    {
-                        var _nftRepository = scope.ServiceProvider.GetRequiredService<INFTRepository>();
+            var _nftRepository = scope.ServiceProvider.GetRequiredService<INFTRepository>();
 
-                        var nftsByUserId = (await _nftRepository.GetNFTsByWallet(user.TelegramWallet)).ToList();
-                        if (nftsByUserId.Count > 0)
-                        {
-                            user.CountNFT = 0;
-                            await _nftRepository.RemoveRangeNfts(nftsByUserId);
-                        }
+            var nftsByUserId = (await _nftRepository.GetNFTsByWallet(user.TelegramWallet)).ToList();
+            if (nftsByUserId.Count > 0)
+            {
+                user.CountNFT = 0;
+                await _nftRepository.RemoveRangeNfts(nftsByUserId);
+            }
+
+            if (!string.IsNullOrEmpty(nftsString))
+            {
+                var nfts = JsonConvert.DeserializeObject<NftsItemsRecord>(nftsString);
+                if (nfts != null && nfts.nft_items != null && nfts.nft_items.Length != 0)
+                {
+
+                    var nftsRecords = nfts.nft_items.Where(item => item.collection.address == "0:7fbad883641b9681058689bf125765d855b5b2f0a56c45a4cc4fb95ad10e55f2");
+                    if (nftsRecords.Count() > 0)
+                    {
+                        
 
                         if (user.CountNFT == null)
                         {
@@ -79,9 +82,11 @@ public class BaseVisitor : IBaseVisitor
                         }
                         await _nftRepository.AddRangeNft(nftsEntities);
                     }
+
                 }
             }
         }
+        
         
         _cache.Set(CacheExtension.GetCacheKeyNFT(user.TelegramWallet), nftsEntities,
                         new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(double.Parse(_configuration["ExpiresCache"]!))));
@@ -198,7 +203,12 @@ public class BaseVisitor : IBaseVisitor
                             currUserInTop = false;
                             placeInTop = count;
                         }
-                        strBuild.AppendLine($"{count}. {user.Name} - {token.TotalCoins}");
+
+                        if (count <= 16)
+                        {
+                            strBuild.AppendLine($"{count}. {user.Name} - {token.TotalCoins}");
+                        }
+
                         count++;
                     }
                 }
