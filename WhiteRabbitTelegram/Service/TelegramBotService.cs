@@ -66,7 +66,7 @@ public class TelegramBotService : ITelegramBotService
                 user.LastCommand = currCommand;
             }
 
-            if (text == UserCommands.StartCommand)
+            if (text == UserCommands.StartCommand || (text.Contains("start") && text.Contains("whiterabbit")))
             {
                 if (user.IsFirstSign)
                 {
