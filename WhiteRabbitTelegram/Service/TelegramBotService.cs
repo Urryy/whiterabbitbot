@@ -55,7 +55,7 @@ public class TelegramBotService : ITelegramBotService
 
             if (user == null)
             {
-                user = new Entity.User(chatId, upd.Message.Chat.Username ?? upd.Message.Chat.LastName ?? "unknown user");
+                user = new Entity.User(chatId, upd.Message?.Chat.Username ?? upd.Message?.Chat.LastName ?? "unknown user");
                 await userRepository.AddUser(user);
             }
 
@@ -78,7 +78,7 @@ public class TelegramBotService : ITelegramBotService
                 }
                 else
                 {
-                    await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, true, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
+                    await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
                     user.CurrentCommand = UserCommands.MainMenuCommand;
                     user.LastCommand = UserCommands.MainMenuCommand;
                 }

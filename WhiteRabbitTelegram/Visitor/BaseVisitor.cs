@@ -266,6 +266,7 @@ public class BaseVisitor : IBaseVisitor
             await handler.bot.SendMessage(handler.upd, handler.user, message, handler.isReplaceMessage, InlineKeyboardButtonMessage.GetButtonPersonalAccount());
         }
     }
+
     public async Task Visit(AllUsersHandler handler)
     {
         var chatId = await handler.upd.GetChatId();
@@ -282,7 +283,7 @@ public class BaseVisitor : IBaseVisitor
                     var userRepo = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                     var tokenRepo = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
 
-                    var allUsers = await userRepo.GetAllUsers();
+                    var allUsers = (await userRepo.GetAllUsers()).OrderByDescending(i => i.CountNFT);
                     var paginatedUsers = await PaginationExtension<Entity.User>.CreateAsync(allUsers, pageInt, 15);
                     strBuilder.AppendLine($"Количество пользователей на данный момент: {allUsers.Count()}\n");
                     strBuilder.AppendLine($"Пользователи:");
@@ -290,7 +291,8 @@ public class BaseVisitor : IBaseVisitor
                     foreach (var user in paginatedUsers.Items)
                     {
                         var tokens = await tokenRepo.GetTokenWCByWallet(user.TelegramWallet);
-                        strBuilder.AppendLine($"{count}. {user.Name}  {user.CountNFT} NFTs  {tokens.Select(i => i.Tokens).Sum()} WC");
+                        strBuilder.AppendLine($"{count}. {user.Name} | {user.CountNFT ?? 0} NFT | Добыто {tokens.Select(i => i.Tokens).Sum()} WC | Куплено {user.TokensWhiteCoin} WC");
+                        count++;
                     }
 
                     await handler.bot.SendMessage(handler.upd, handler.user, strBuilder.ToString(), true,
@@ -333,8 +335,6 @@ public class BaseVisitor : IBaseVisitor
 
     public async Task Visit(RenewTelegramWalletHandler handler)
     {
-        var chatId = await handler.upd.GetChatId();
-
         handler.user.TelegramWallet = handler.wallet;
 
         handler.user.LastCommand = handler.user.CurrentCommand;
@@ -354,7 +354,6 @@ public class BaseVisitor : IBaseVisitor
 
     public async Task Visit(FirstSignHandler handler)
     {
-        var chatId = await handler.upd.GetChatId();
         handler.user.TelegramWallet = handler.wallet;
 
         //Проверка кошелька и проверка на наличие NFT коллекции
