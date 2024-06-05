@@ -21,6 +21,7 @@ public class UserCommands
     public static string ReferralLinkCommand = "ReferralLinkCommand";
     public static string ChangeWalletAddressCommand = "ChangeWalletAddressCommand";
     public static string ConnectNewWalletAddressCommand = "ConnectNewWalletAddressCommand";
+    public static string AllUsersCommand(int page) => $"AllUsersCommand_{page}"; 
 }
 
 public class BotCommands
@@ -34,7 +35,7 @@ public class BotCommands
     public static string CheckNFTCollectionCommand = "Проверяем вашу коллекцию NFT для начисления бонусных токенов.💫";
     public static string AgainCheckNftCollectionCommand = "Проверям количество ваших NFT💫";
     public static string MainMenuCommand = "Переводим вас на главное меню.";
-    public static string CardMainMenuCommand = "Добывай монеты до релиза игры 🐇\n\n\tГлавное меню ";
+    public static string CardMainMenuCommand = "Добывай монеты до релиза игры 🐇\r\nКупи NFT и добывай быстрее 🚀\r\n\r\nВы в главном меню:";
     //MainMenu commands
 
 

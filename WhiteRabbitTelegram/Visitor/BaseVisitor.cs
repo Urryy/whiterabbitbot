@@ -114,6 +114,7 @@ public class BaseVisitor : IBaseVisitor
                 await repositoryWB.AddTokenWC(token);
                 await handler.bot.AnswerCallbackQueryAsync(chatId, $"Поздравляем!\n\nВы заработали свои первые {token.Tokens.ToString()} WB coins!", showAlert: true);
                 handler.user.DateUpdated = DateTime.Now;
+                handler.user.IsSendedNotification = false;
             }
             else
             {
@@ -125,7 +126,8 @@ public class BaseVisitor : IBaseVisitor
                     var token = new TokenWС((decimal)(0.01 * (nfts.Count == 0 ? 1 : nfts.Count)), handler.user.TelegramWallet!);
                     await repositoryWB.AddTokenWC(token);
                     await handler.bot.AnswerCallbackQueryAsync(chatId, $"Вы получили {token.Tokens.ToString()} WB coins!", showAlert: true);
-                    handler.user.DateUpdated = DateTime.Now;
+                    handler.user.DateUpdated = handler.user.DateUpdated.AddHours(6);
+                    handler.user.IsSendedNotification = false;
                 }
                 else
                 {
@@ -255,12 +257,46 @@ public class BaseVisitor : IBaseVisitor
 
             var tokensByWallet = await tokenRepository.GetTokenWCByWallet(handler.user.TelegramWallet);
             var nftsByWallet = (await nftRepository.GetNFTsByWallet(handler.user.TelegramWallet)).Count;
-            var message = $"Количество NFT: {nftsByWallet}\n\n" +
-                $"Количество купленных WhiteCoins: {Math.Round(handler.user.TokensWhiteCoin, 2)}\n\n" +
-                $"За все время вы добыли {tokensByWallet.Select(i => i.Tokens).Sum()} токенов WC\n\n" +
+            var message = $"В вашем профиле:\n\n" +
+                $"- {nftsByWallet} NFT\n" +
+                $"- Добыто {tokensByWallet.Select(i => i.Tokens).Sum()} WC токенов\n" +
+                $"- Куплено {Math.Round(handler.user.TokensWhiteCoin, 2)} WhiteCoins\n\n" +
                 $"Количество пользователей присоединившихся по вашей реферальной ссылке: {handler.user.Referrals}";
 
             await handler.bot.SendMessage(handler.upd, handler.user, message, handler.isReplaceMessage, InlineKeyboardButtonMessage.GetButtonPersonalAccount());
+        }
+    }
+    public async Task Visit(AllUsersHandler handler)
+    {
+        var chatId = await handler.upd.GetChatId();
+        var strBuilder = new StringBuilder();
+        var count = 1;
+        using (var scope = _srvcProvider.CreateScope())
+        {
+            int startIndex = handler.command.IndexOf("AllUsersCommand_");
+            if(startIndex >= 0)
+            {
+                string page = handler.command.Substring(startIndex + "AllUsersCommand_".Length);
+                if(int.TryParse(page, out var pageInt))
+                {
+                    var userRepo = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+                    var tokenRepo = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
+
+                    var allUsers = await userRepo.GetAllUsers();
+                    var paginatedUsers = await PaginationExtension<Entity.User>.CreateAsync(allUsers, pageInt, 15);
+                    strBuilder.AppendLine($"Количество пользователей на данный момент: {allUsers.Count()}\n");
+                    strBuilder.AppendLine($"Пользователи:");
+
+                    foreach (var user in paginatedUsers.Items)
+                    {
+                        var tokens = await tokenRepo.GetTokenWCByWallet(user.TelegramWallet);
+                        strBuilder.AppendLine($"{count}. {user.Name}  {user.CountNFT} NFTs  {tokens.Select(i => i.Tokens).Sum()} WC");
+                    }
+
+                    await handler.bot.SendMessage(handler.upd, handler.user, strBuilder.ToString(), true,
+                        InlineKeyboardButtonMessage.GetButtonAlllUsersNavigation(paginatedUsers.HasNextPage, paginatedUsers.HasPreviousPage, paginatedUsers.Page));
+                }
+            }   
         }
     }
 
@@ -340,6 +376,7 @@ public class BaseVisitor : IBaseVisitor
 
         await handler.bot.SendMessage(handler.upd, handler.user, BotCommands.MainMenuCommand, true);
         await Task.Delay(1000);
-        await handler.bot.SendMessage(handler.upd, handler.user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu());
+        await handler.bot.SendMessage(handler.upd, handler.user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu(handler.user.Role));
     }
+    
 }

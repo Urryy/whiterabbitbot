@@ -40,7 +40,7 @@ public class TelegramBotService : ITelegramBotService
                 await Task.CompletedTask;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             await Task.CompletedTask;
         } 
@@ -78,7 +78,7 @@ public class TelegramBotService : ITelegramBotService
                 }
                 else
                 {
-                    await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu());
+                    await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, true, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
                     user.CurrentCommand = UserCommands.MainMenuCommand;
                     user.LastCommand = UserCommands.MainMenuCommand;
                 }
@@ -99,7 +99,7 @@ public class TelegramBotService : ITelegramBotService
             }
             else if (text == UserCommands.MainMenuCommand || text == UserCommands.BackIntoMainMenu)
             {
-                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, text == UserCommands.MainMenuCommand ? false:true, InlineKeyboardButtonMessage.GetButtonsMainMenu());
+                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, text == UserCommands.MainMenuCommand ? false:true, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
                 user.CurrentCommand = UserCommands.MainMenuCommand;
                 user.LastCommand = UserCommands.MainMenuCommand;
             }
@@ -114,7 +114,7 @@ public class TelegramBotService : ITelegramBotService
             {
                 var earnHandler = new EarnWBCoinsHandler(user, bot, upd);
                 await earnHandler.Accept(_visitor);
-                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu());
+                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
                 user.CurrentCommand = UserCommands.MainMenuCommand;
                 user.LastCommand = UserCommands.MainMenuCommand;
             }
@@ -158,6 +158,14 @@ public class TelegramBotService : ITelegramBotService
                     await handler.Accept(_visitor);
                 }
             }
+            else if(text.Contains("AllUsersCommand_"))
+            {
+                var handler = new AllUsersHandler(bot, upd, user, text);
+                await handler.Accept(_visitor);
+                user.LastCommand = user.CurrentCommand;
+                user.CurrentCommand = text;             
+            }
+
             user.TelegramId = chatId;
             await userRepository.UpdateUser(user);
         }

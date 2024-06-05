@@ -3299,25 +3299,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Yatsko_YU\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "C:\\Users\\Lenovo\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\rabbit\\whiterabbitbot\\WhiteRabbitTelegram\\WhiteRabbitTelegram.csproj",
+      "projectUniqueName": "E:\\EGZAMIN.NET\\WhiteRabbitTelegram\\WhiteRabbitTelegram\\WhiteRabbitTelegram.csproj",
       "projectName": "WhiteRabbitTelegram",
-      "projectPath": "D:\\rabbit\\whiterabbitbot\\WhiteRabbitTelegram\\WhiteRabbitTelegram.csproj",
-      "packagesPath": "C:\\Users\\Yatsko_YU\\.nuget\\packages\\",
-      "outputPath": "D:\\rabbit\\whiterabbitbot\\WhiteRabbitTelegram\\obj\\",
+      "projectPath": "E:\\EGZAMIN.NET\\WhiteRabbitTelegram\\WhiteRabbitTelegram\\WhiteRabbitTelegram.csproj",
+      "packagesPath": "C:\\Users\\Lenovo\\.nuget\\packages\\",
+      "outputPath": "E:\\EGZAMIN.NET\\WhiteRabbitTelegram\\WhiteRabbitTelegram\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Yatsko_YU\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Lenovo\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -3326,12 +3324,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
-        "D:\\KDO\\loan_service\\LoanService.Grpc.Shared\\bin\\Debug": {},
-        "D:\\KDO\\loan_service\\LoanService.Shared\\bin\\Debug": {},
-        "https://api.nuget.org/v3/index.json": {},
-        "https://artifactory.st.by/artifactory/api/nuget/v3/nuget_bveb_virt": {},
-        "https://nuget.telerik.com/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net7.0": {
@@ -3343,11 +3336,6 @@
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -3406,7 +3394,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
       }
     }
   }

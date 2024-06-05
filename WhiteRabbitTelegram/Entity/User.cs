@@ -21,6 +21,8 @@ public class User
     public string OwnReferralId { get; set; }
     public bool IsFirstSign { get; set; } = true;
     public int? LastMessageId { get; set; }
+    public bool IsSendedNotification { get; set; } = false;
+    public Role Role { get; set; } = Role.User;
 
     protected User()
     {

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WhiteRabbitTelegram")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1f0181dae2c0d75afbde9f8e24471c5e95ab6a8c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
 [assembly: System.Reflection.AssemblyProductAttribute("WhiteRabbitTelegram")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WhiteRabbitTelegram")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

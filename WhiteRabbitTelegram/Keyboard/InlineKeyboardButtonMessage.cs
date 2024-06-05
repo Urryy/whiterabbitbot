@@ -1,22 +1,95 @@
 ﻿using Telegram.Bot.Types.ReplyMarkups;
 using WhiteRabbitTelegram.Command;
+using WhiteRabbitTelegram.Entity;
 
 namespace WhiteRabbitTelegram.Keyboard;
 
 public static class InlineKeyboardButtonMessage
 {
-    public static InlineKeyboardMarkup GetButtonsMainMenu() => new InlineKeyboardMarkup(new[]
+    public static InlineKeyboardMarkup GetButtonsMainMenu(Role role, int page = 1)
     {
-        new[]
+        if(role == Role.Admin)
         {
-            InlineKeyboardButton.WithCallbackData("Добыть", UserCommands.EarnWBCoinsCommand),
-            InlineKeyboardButton.WithCallbackData("Топ", UserCommands.TopUsersCommand)
-        },
-        new[]
-        {
-            InlineKeyboardButton.WithCallbackData("Личный кабинет", UserCommands.PersonalAccountCommand)
+            return new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Добыть", UserCommands.EarnWBCoinsCommand),
+                    InlineKeyboardButton.WithCallbackData("Топ", UserCommands.TopUsersCommand)
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Личный кабинет", UserCommands.PersonalAccountCommand)
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Все пользователи", UserCommands.AllUsersCommand(1))
+                }
+            });
         }
-    });
+        else
+        {
+            return new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Добыть", UserCommands.EarnWBCoinsCommand),
+                    InlineKeyboardButton.WithCallbackData("Топ", UserCommands.TopUsersCommand)
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Личный кабинет", UserCommands.PersonalAccountCommand)
+                }
+            });
+        }
+    }
+
+    public static InlineKeyboardMarkup GetButtonAlllUsersNavigation(bool hasNextPage, bool hasPreviousPage, int page)
+    {
+        if(hasNextPage && hasPreviousPage) 
+        {
+            return new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                { 
+                    InlineKeyboardButton.WithCallbackData("Назад", UserCommands.AllUsersCommand(page - 1)),
+                    InlineKeyboardButton.WithCallbackData("Вперед", UserCommands.AllUsersCommand(page + 1))
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Назад в главное меню", UserCommands.BackIntoMainMenu)
+                }
+            });
+        }
+        else if (hasNextPage)
+        {
+            return new InlineKeyboardMarkup(new[]
+                {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Вперед", UserCommands.AllUsersCommand(page + 1))
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Назад в главное меню", UserCommands.BackIntoMainMenu)
+                }
+            });
+        }
+        else
+        {
+            return new InlineKeyboardMarkup(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Назад", UserCommands.AllUsersCommand(page - 1))
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Назад в главное меню", UserCommands.BackIntoMainMenu)
+                }
+            });
+        }
+    }
 
     public static InlineKeyboardMarkup GetButtonTopUsers() => new InlineKeyboardMarkup(new[]
     {

@@ -39,7 +39,7 @@ app.UseHangfireDashboard();
 
 app.UseHttpsRedirection();
 
-app.Services.GetRequiredService<ICronJobService>().DoJob("0 0 */4 * * *");
+app.Services.GetRequiredService<ICronJobService>().DoJob("0 */15 * * * *");
 app.Services.GetRequiredService<TelegramBot>().Start();
 
 app.UseRouting();
