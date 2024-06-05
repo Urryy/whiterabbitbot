@@ -78,7 +78,7 @@ public class TelegramBotService : ITelegramBotService
                 }
                 else
                 {
-                    await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand,true, InlineKeyboardButtonMessage.GetButtonsMainMenu());
+                    await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu());
                     user.CurrentCommand = UserCommands.MainMenuCommand;
                     user.LastCommand = UserCommands.MainMenuCommand;
                 }
