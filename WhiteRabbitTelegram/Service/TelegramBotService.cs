@@ -66,6 +66,13 @@ public class TelegramBotService : ITelegramBotService
                 user.LastCommand = currCommand;
             }
 
+            var isMember = await bot.IsMemberOfChannel(upd, user);
+            if (!isMember)
+            {
+                await bot.SendMessage(upd, user, "Подпишитесь на канал, чтобы пользоваться ботом:", true, InlineKeyboardButtonMessage.GetButtonIsMemberChannel());
+                return;
+            }
+
             if (text == UserCommands.StartCommand || (text.Contains("start") && text.Contains("whiterabbit")))
             {
                 if (user.IsFirstSign)
@@ -99,7 +106,7 @@ public class TelegramBotService : ITelegramBotService
             }
             else if (text == UserCommands.MainMenuCommand || text == UserCommands.BackIntoMainMenu)
             {
-                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, text == UserCommands.MainMenuCommand ? false:true, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
+                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, text == UserCommands.MainMenuCommand ? false : true, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
                 user.CurrentCommand = UserCommands.MainMenuCommand;
                 user.LastCommand = UserCommands.MainMenuCommand;
             }
@@ -164,6 +171,21 @@ public class TelegramBotService : ITelegramBotService
                 await handler.Accept(_visitor);
                 user.LastCommand = user.CurrentCommand;
                 user.CurrentCommand = text;             
+            }
+            else if (text == UserCommands.CheckSubscribeCommand)
+            {
+                if (isMember && user.IsFirstSign)
+                {
+                    var referralHandler = new ReferralSystemHandler(user, text, bot, upd);
+                    await referralHandler.Accept(_visitor);
+                    await bot.SendMessage(upd, user, BotCommands.ConnectWalletCommand, true);
+                    user.LastCommand = user.CurrentCommand;
+                    user.CurrentCommand = UserCommands.ConnectWalletCommand;
+                }
+                else
+                {
+                    await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, true, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
+                }
             }
 
             user.TelegramId = chatId;

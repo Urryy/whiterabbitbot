@@ -21,7 +21,8 @@ public class UserCommands
     public static string ReferralLinkCommand = "ReferralLinkCommand";
     public static string ChangeWalletAddressCommand = "ChangeWalletAddressCommand";
     public static string ConnectNewWalletAddressCommand = "ConnectNewWalletAddressCommand";
-    public static string AllUsersCommand(int page) => $"AllUsersCommand_{page}"; 
+    public static string AllUsersCommand(int page) => $"AllUsersCommand_{page}";
+    public static string CheckSubscribeCommand = "CheckSubscribeCommand";
 }
 
 public class BotCommands

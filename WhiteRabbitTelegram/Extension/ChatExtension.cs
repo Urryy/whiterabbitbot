@@ -68,6 +68,23 @@ public static class ChatExtension
         }
     }
 
+    public static async Task<long?> GetUserId(this Update upd)
+    {
+        if (upd.Type == UpdateType.CallbackQuery)
+        {
+            return upd.CallbackQuery?.From.Id;
+        }
+        else if (upd.Type == UpdateType.Message)
+        {
+
+            return upd.Message?.From?.Id;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     //public static async Task SendMessage(this ITelegramBotClient bot, Update upd, Entity.User user, string text, InlineKeyboardMarkup buttons = null) 
     //{
     //    var chatId = await upd.GetChatId();
@@ -137,5 +154,19 @@ public static class ChatExtension
                 user.LastMessageId = (await bot.SendTextMessageAsync(chatId, text)).MessageId;
             }
         }
+    }
+
+    public static async Task<bool> IsMemberOfChannel(this ITelegramBotClient bot, Update upd, Entity.User user)
+    {
+        var userId = await upd.GetUserId();
+        if(userId != null) 
+        {
+            var t = await bot.GetChatMemberAsync("@WhiteRabbitTON", userId.Value);
+            if(t.Status != ChatMemberStatus.Left && t.Status != ChatMemberStatus.Restricted && t.Status != ChatMemberStatus.Kicked)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

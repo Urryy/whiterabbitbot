@@ -164,4 +164,16 @@ public static class InlineKeyboardButtonMessage
             InlineKeyboardButton.WithCallbackData("Добыть", UserCommands.EarnWBCoinsByNotificationCommand),
         }
     });
+
+    public static InlineKeyboardMarkup GetButtonIsMemberChannel() => new InlineKeyboardMarkup(new[]
+    {
+        new[]
+        {
+            InlineKeyboardButton.WithUrl("White Rabbit", "https://t.me/WhiteRabbitTON")
+        },
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Проверить подписку", UserCommands.CheckSubscribeCommand)
+        }
+    });
 }
