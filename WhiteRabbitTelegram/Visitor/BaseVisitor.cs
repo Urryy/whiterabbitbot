@@ -126,7 +126,7 @@ public class BaseVisitor : IBaseVisitor
                     var token = new TokenWС((decimal)(0.01 * (nfts.Count == 0 ? 1 : nfts.Count)), handler.user.TelegramWallet!);
                     await repositoryWB.AddTokenWC(token);
                     await handler.bot.AnswerCallbackQueryAsync(chatId, $"Вы получили {token.Tokens.ToString()} WB coins!", showAlert: true);
-                    handler.user.DateUpdated = handler.user.DateUpdated.AddHours(6);
+                    handler.user.DateUpdated = DateTime.Now;
                     handler.user.IsSendedNotification = false;
                 }
                 else

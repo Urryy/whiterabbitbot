@@ -46,6 +46,10 @@ public class User
                 var value = decimal.Parse(whiteCoinJetton.balance, System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture);
                 TokensWhiteCoin = (value / 1000000000);
             }
+            else
+            {
+                TokensWhiteCoin = 0;
+            }
         }
         else
         {

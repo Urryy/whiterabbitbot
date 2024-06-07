@@ -69,6 +69,11 @@ public class TelegramBotService : ITelegramBotService
             var isMember = await bot.IsMemberOfChannel(upd, user);
             if (!isMember)
             {
+                if(text.Contains("start") && text.Contains("whiterabbit"))
+                {
+                    var referralHandler = new ReferralSystemHandler(user, text, bot, upd);
+                    await referralHandler.Accept(_visitor);
+                }
                 await bot.SendMessage(upd, user, "Подпишитесь на канал, чтобы пользоваться ботом:", true, InlineKeyboardButtonMessage.GetButtonIsMemberChannel());
                 return;
             }

@@ -136,11 +136,25 @@ public static class ChatExtension
         {
             if (buttons != null)
             {
-                await bot.EditMessageTextAsync(chatId, user.LastMessageId.Value, text, replyMarkup: buttons);
+                try
+                {
+                    var res = await bot.EditMessageTextAsync(chatId, user.LastMessageId.Value, text, replyMarkup: buttons);
+                }
+                catch (Exception)
+                {
+                    user.LastMessageId = (await bot.SendTextMessageAsync(chatId, text, replyMarkup: buttons)).MessageId;
+                }
             }
             else
             {
-                await bot.EditMessageTextAsync(chatId, user.LastMessageId.Value, text);
+                try
+                {
+                    await bot.EditMessageTextAsync(chatId, user.LastMessageId.Value, text);
+                }
+                catch (Exception)
+                {
+                    user.LastMessageId = (await bot.SendTextMessageAsync(chatId, text)).MessageId;
+                }
             }
         }
         else
