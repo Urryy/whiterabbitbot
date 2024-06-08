@@ -181,8 +181,6 @@ public class TelegramBotService : ITelegramBotService
             {
                 if (isMember && user.IsFirstSign)
                 {
-                    var referralHandler = new ReferralSystemHandler(user, text, bot, upd);
-                    await referralHandler.Accept(_visitor);
                     await bot.SendMessage(upd, user, BotCommands.ConnectWalletCommand, true);
                     user.LastCommand = user.CurrentCommand;
                     user.CurrentCommand = UserCommands.ConnectWalletCommand;

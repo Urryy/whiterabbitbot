@@ -284,8 +284,10 @@ public class BaseVisitor : IBaseVisitor
                     var tokenRepo = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
 
                     var allUsers = (await userRepo.GetAllUsers()).OrderByDescending(i => i.CountNFT);
+                    var activeUsersCount = allUsers.Where(i => i.TelegramWallet != null).Count();
                     var paginatedUsers = await PaginationExtension<Entity.User>.CreateAsync(allUsers, pageInt, 15);
                     strBuilder.AppendLine($"Количество пользователей на данный момент: {allUsers.Count()}\n");
+                    strBuilder.AppendLine($"Количество активных пользователей: {activeUsersCount}\n");
                     strBuilder.AppendLine($"Пользователи:");
 
                     foreach (var user in paginatedUsers.Items)
