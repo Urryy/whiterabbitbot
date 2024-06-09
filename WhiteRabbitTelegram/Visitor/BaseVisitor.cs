@@ -14,6 +14,7 @@ using WhiteRabbitTelegram.Keyboard;
 using WhiteRabbitTelegram.Records;
 using WhiteRabbitTelegram.Repository;
 using WhiteRabbitTelegram.Service;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace WhiteRabbitTelegram.Visitor;
 
@@ -99,6 +100,29 @@ public class BaseVisitor : IBaseVisitor
                         new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(double.Parse(_configuration["ExpiresCache"]!))));
     }
 
+    private async Task JoinClann(Entity.User user, string text, string indexName = "clann")
+    {
+        using (var scope = _srvcProvider.CreateScope())
+        {
+            int startIndex = text.IndexOf(indexName);
+            if (startIndex >= 0)
+            {
+                string result = text.Substring(startIndex + indexName.Length);
+
+                var clannRepository = scope.ServiceProvider.GetRequiredService<IClannRepository>();
+                var clannItemRepository = scope.ServiceProvider.GetRequiredService<IClannItemRepository>();
+
+                var clannByRefLink = await clannRepository.GetClannByRef(result);
+                var userIsInClann = await clannItemRepository.GetClannItemByUserId(user.Id);
+                if (clannByRefLink != null && userIsInClann == null)
+                {
+                    var item = new ClannItem(user.Id, clannByRefLink.Id);
+                    await clannItemRepository.AddClannItem(item);
+                }
+            }
+        }
+    }
+
     public async Task Visit(EarnWBCoinsHandler handler)
     {
         var chatId = await handler.upd.GetCallbackQueryId();
@@ -108,9 +132,26 @@ public class BaseVisitor : IBaseVisitor
             if (DateTime.Compare(handler.user.DateCreated.Date, handler.user.DateUpdated.Date) == 0 && handler.user.DateCreated.Hour == handler.user.DateUpdated.Hour
                 && handler.user.DateCreated.Minute == handler.user.DateUpdated.Minute && handler.user.DateCreated.Second == handler.user.DateUpdated.Second)
             {
+                var clannItemRepository = scope.ServiceProvider.GetRequiredService<IClannItemRepository>();
                 var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
                 var nftMultiplier = nfts.Count == 0 ? 1 : (nfts.Count * 3);
                 var tokens = (decimal)(0.01 * nftMultiplier);
+
+                var clannItem = await clannItemRepository.GetClannItemByUserId(handler.user.Id);
+                if (clannItem != null)
+                {
+                    var clannRepository = scope.ServiceProvider.GetRequiredService<IClannRepository>();
+                    var clann = await clannRepository.GetClannById(clannItem.ClannId);
+                    if (clann != null)
+                    {
+                        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+                        var owner = await userRepository.GetUserById(clann.OwnerId);
+                        var tokenForOwner = (handler.user.CountNFT != null && handler.user.CountNFT > 0) ? (tokens * (decimal)0.1) : (tokens * (decimal)0.05);
+                        await repositoryWB.AddTokenWC(new TokenWС(tokenForOwner, owner.TelegramWallet!));
+                        tokens = tokens - tokenForOwner;
+                    }
+                }
+
                 var token = new TokenWС(tokens, handler.user.TelegramWallet!);
                 await repositoryWB.AddTokenWC(token);
                 await handler.bot.AnswerCallbackQueryAsync(chatId, $"Поздравляем!\n\nВы заработали свои первые {token.Tokens.ToString()} WB coins!", showAlert: true);
@@ -123,9 +164,27 @@ public class BaseVisitor : IBaseVisitor
                 var diffDate = DateTime.Now.Subtract(handler.user.DateUpdated);
                 if (diffDate.TotalHours >= 6)
                 {
+                    var clannItemRepository = scope.ServiceProvider.GetRequiredService<IClannItemRepository>();
                     var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
                     var nftMultiplier = nfts.Count == 0 ? 1 : (nfts.Count * 3);
-                    var token = new TokenWС((decimal)(0.01 * nftMultiplier), handler.user.TelegramWallet!);
+                    var tokens = (decimal)(0.01 * nftMultiplier);
+
+                    var clannItem = await clannItemRepository.GetClannItemByUserId(handler.user.Id);
+                    if (clannItem != null)
+                    {
+                        var clannRepository = scope.ServiceProvider.GetRequiredService<IClannRepository>();
+                        var clann = await clannRepository.GetClannById(clannItem.ClannId);
+                        if (clann != null)
+                        {
+                            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+                            var owner = await userRepository.GetUserById(clann.OwnerId);
+                            var tokenForOwner = (handler.user.CountNFT != null && handler.user.CountNFT > 0) ? (tokens * (decimal)0.1) : (tokens * (decimal)0.05);
+                            await repositoryWB.AddTokenWC(new TokenWС(tokenForOwner, owner.TelegramWallet!));
+                            tokens = tokens - tokenForOwner;
+                        }
+                    }
+
+                    var token = new TokenWС(tokens, handler.user.TelegramWallet!);
                     await repositoryWB.AddTokenWC(token);
                     await handler.bot.AnswerCallbackQueryAsync(chatId, $"Вы получили {token.Tokens.ToString()} WB coins!", showAlert: true);
                     handler.user.DateUpdated = DateTime.Now;
@@ -261,11 +320,13 @@ public class BaseVisitor : IBaseVisitor
             var nftsByWallet = (await nftRepository.GetNFTsByWallet(handler.user.TelegramWallet)).Count;
             var message = $"В вашем профиле:\n\n" +
                 $"- {nftsByWallet} NFT\n" +
-                $"- Добыто {tokensByWallet.Select(i => i.Tokens).Sum()} WC токенов\n" +
+                $"- Добыто {tokensByWallet.Select(i => i.Tokens).Sum()} WB токенов\n" +
                 $"- Куплено {Math.Round(handler.user.TokensWhiteCoin, 2)} WhiteCoins\n\n" +
                 $"Количество пользователей присоединившихся по вашей реферальной ссылке: {handler.user.Referrals}";
 
-            await handler.bot.SendMessage(handler.upd, handler.user, message, handler.isReplaceMessage, InlineKeyboardButtonMessage.GetButtonPersonalAccount());
+            var clannRepository = scope.ServiceProvider.GetRequiredService<IClannRepository>();
+            var isOwnerClann = await clannRepository.GetClannByOwnerId(handler.user.Id);
+            await handler.bot.SendMessage(handler.upd, handler.user, message, handler.isReplaceMessage, InlineKeyboardButtonMessage.GetButtonPersonalAccount(isOwnerClann));
         }
     }
 
@@ -295,7 +356,7 @@ public class BaseVisitor : IBaseVisitor
                     foreach (var user in paginatedUsers.Items)
                     {
                         var tokens = await tokenRepo.GetTokenWCByWallet(user.TelegramWallet);
-                        strBuilder.AppendLine($"{count}. {user.Name} | {user.CountNFT ?? 0} NFT | Добыто {tokens.Select(i => i.Tokens).Sum()} WC | Куплено {user.TokensWhiteCoin} WC");
+                        strBuilder.AppendLine($"{count}. {user.Name} | {user.CountNFT ?? 0} NFT | Добыто {tokens.Select(i => i.Tokens).Sum()} WB | Куплено {user.TokensWhiteCoin} WC");
                         count++;
                     }
 
@@ -331,6 +392,7 @@ public class BaseVisitor : IBaseVisitor
                             await userRep.UpdateUser(userByRefLink);
                         }
                     }
+                    await JoinClann(handler.user, handler.textWithRefLink, "whiterabbit");
                 }
             }
         }
@@ -382,4 +444,49 @@ public class BaseVisitor : IBaseVisitor
         await handler.bot.SendMessage(handler.upd, handler.user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu(handler.user.Role));
     }
     
+    public async Task Visit(CreateClannHandler handler)
+    {
+        var chatId = handler.upd.GetChatId();
+        using (var scope = _srvcProvider.CreateScope())
+        {
+            var tokenRepository = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
+            var tokensByUserId = await tokenRepository.GetTokenWCByWallet(handler.user.TelegramWallet);
+            var sumOfTokens = tokensByUserId.Select(i => i.Tokens).Sum();
+            if(sumOfTokens < 30)
+            {
+                var callId = await handler.upd.GetCallbackQueryId();
+                await handler.bot.AnswerCallbackQueryAsync(callId, $"Для создания клана требуется добыть 30 WB токенов", showAlert: true);
+                return;
+            }
+
+            var clann = new Clann(handler.user.Id, handler.user.OwnReferralId);
+            var clannRepo = scope.ServiceProvider.GetRequiredService<IClannRepository>();
+            await clannRepo.AddClann(clann);
+
+            var tokensToRemove = new List<TokenWС>();
+            sumOfTokens = 0;
+            foreach (var token in tokensByUserId)
+            {
+                sumOfTokens += token.Tokens;
+                if(sumOfTokens >= 30)
+                {
+                    var ostatokSumi = 30 - (sumOfTokens - token.Tokens);
+                    var newSum = token.Tokens - ostatokSumi;
+                    await tokenRepository.AddTokenWC(new TokenWС(newSum, handler.user.TelegramWallet));
+                    break;
+                }
+                else
+                {
+                    tokensToRemove.Add(token);
+                }
+            }
+            await tokenRepository.RemoveRangeTokenWCs(tokensToRemove);
+        }
+        await handler.bot.SendMessage(handler.upd, handler.user, "Вы успешно создали свой клан", true, InlineKeyboardButtonMessage.GetButtonBackIntoPersonalAccount());
+    }
+
+    public async Task Visit(JoinClannHandler handler)
+    {
+        await JoinClann(handler.user, handler.text);
+    }
 }

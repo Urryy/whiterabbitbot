@@ -111,7 +111,7 @@ public static class InlineKeyboardButtonMessage
         }
     });
 
-    public static InlineKeyboardMarkup GetButtonPersonalAccount() => new InlineKeyboardMarkup(new[]
+    public static InlineKeyboardMarkup GetButtonPersonalAccount(Clann? isOwner) => new InlineKeyboardMarkup(new[]
     {
         new[]
         {
@@ -126,6 +126,15 @@ public static class InlineKeyboardButtonMessage
             {
                 Url = "https://app.ston.fi/swap?chartVisible=false&ft=TON&tt=EQB-h24QEzN23Z1EOlExXTzDYza4VdKVRfJ_-nfBMa_xBybP" 
             })
+        },
+        isOwner != null 
+        ? new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Информация о клане", UserCommands.InformationAboutClannCommand)
+        }
+        : new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Создать клан", UserCommands.ConfirmCreateClannCommand)
         },
         new[]
         {
@@ -151,6 +160,26 @@ public static class InlineKeyboardButtonMessage
 
     public static InlineKeyboardMarkup GetButtonChangeTelegramWallet() => new InlineKeyboardMarkup(new[]
     {
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Назад в Личный кабинет", UserCommands.BackIntoPersonalAccountCommand)
+        }
+    });
+
+    public static InlineKeyboardMarkup GetButtonBackIntoPersonalAccount() => new InlineKeyboardMarkup(new[]
+    {
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Назад в Личный кабинет", UserCommands.BackIntoPersonalAccountCommand)
+        }
+    });
+
+    public static InlineKeyboardMarkup GetButtonCreateClann() => new InlineKeyboardMarkup(new[]
+    {
+        new[]
+        {
+            InlineKeyboardButton.WithCallbackData("Создать", UserCommands.ConfirmCreateClannCommand)
+        },
         new[]
         {
             InlineKeyboardButton.WithCallbackData("Назад в Личный кабинет", UserCommands.BackIntoPersonalAccountCommand)

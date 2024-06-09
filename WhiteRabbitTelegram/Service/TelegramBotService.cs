@@ -147,7 +147,7 @@ public class TelegramBotService : ITelegramBotService
             else if (text == UserCommands.ReferralLinkCommand)
             {
                 await bot.SendMessage(upd, user, $"Ваша реферальная ссылка - https://t.me/RabbitClubBot?start=whiterabbit{user.OwnReferralId} ❤️‍🔥 \n\n" +
-                    $"За каждого приглашенного пользователя 0.5 WC, а за пользователя Telegram Premium 1 WC", true, InlineKeyboardButtonMessage.GetButtonReferralLink());
+                    $"За каждого приглашенного пользователя 0.5 WB, а за пользователя Telegram Premium 1 WB", true, InlineKeyboardButtonMessage.GetButtonReferralLink());
                 user.LastCommand = user.CurrentCommand;
                 user.CurrentCommand = text;
             }
@@ -189,6 +189,23 @@ public class TelegramBotService : ITelegramBotService
                 {
                     await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, true, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
                 }
+            }
+            else if(text == UserCommands.CreateClannCommand) 
+            {
+                await bot.SendMessage(upd, user, "Для создание клана потребуется 30 WB токенов\n\n", true, InlineKeyboardButtonMessage.GetButtonCreateClann());
+                user.LastCommand = user.CurrentCommand;
+                user.CurrentCommand = UserCommands.ConnectNewWalletAddressCommand;
+            }
+            else if(text == UserCommands.ConfirmCreateClannCommand)
+            {
+                var handler = new CreateClannHandler(user, bot, upd);
+                await handler.Accept(_visitor);
+                user.LastCommand = user.CurrentCommand;
+                user.CurrentCommand = UserCommands.ConnectNewWalletAddressCommand;
+            }
+            else if(text.Contains("start") && text.Contains("clann"))
+            {
+
             }
 
             user.TelegramId = chatId;
