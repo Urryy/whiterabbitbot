@@ -147,7 +147,7 @@ public class TelegramBotService : ITelegramBotService
             else if (text == UserCommands.ReferralLinkCommand)
             {
                 await bot.SendMessage(upd, user, $"Ваша реферальная ссылка - https://t.me/RabbitClubBot?start=whiterabbit{user.OwnReferralId} ❤️‍🔥 \n\n" +
-                    $"За каждого приглашенного пользователя 0.01 WC, а за пользователя Telegram Premium 0.02 WC", true, InlineKeyboardButtonMessage.GetButtonReferralLink());
+                    $"За каждого приглашенного пользователя 0.5 WC, а за пользователя Telegram Premium 1 WC", true, InlineKeyboardButtonMessage.GetButtonReferralLink());
                 user.LastCommand = user.CurrentCommand;
                 user.CurrentCommand = text;
             }
