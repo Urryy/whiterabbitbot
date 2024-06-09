@@ -109,7 +109,7 @@ public class BaseVisitor : IBaseVisitor
                 && handler.user.DateCreated.Minute == handler.user.DateUpdated.Minute && handler.user.DateCreated.Second == handler.user.DateUpdated.Second)
             {
                 var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
-                var nftMultiplier = nfts.Count == 0 ? 1 : Math.Pow(3, nfts.Count);
+                var nftMultiplier = nfts.Count == 0 ? 1 : (nfts.Count * 3);
                 var tokens = (decimal)(0.01 * nftMultiplier);
                 var token = new TokenWС(tokens, handler.user.TelegramWallet!);
                 await repositoryWB.AddTokenWC(token);
@@ -124,7 +124,7 @@ public class BaseVisitor : IBaseVisitor
                 if (diffDate.TotalHours >= 6)
                 {
                     var repositoryWB = scope.ServiceProvider.GetRequiredService<ITokenWCRepository>();
-                    var nftMultiplier = nfts.Count == 0 ? 1 : Math.Pow(3, nfts.Count);
+                    var nftMultiplier = nfts.Count == 0 ? 1 : (nfts.Count * 3);
                     var token = new TokenWС((decimal)(0.01 * nftMultiplier), handler.user.TelegramWallet!);
                     await repositoryWB.AddTokenWC(token);
                     await handler.bot.AnswerCallbackQueryAsync(chatId, $"Вы получили {token.Tokens.ToString()} WB coins!", showAlert: true);
