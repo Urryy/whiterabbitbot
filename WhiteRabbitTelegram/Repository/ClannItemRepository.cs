@@ -27,9 +27,9 @@ public class ClannItemRepository : IClannItemRepository
         return _context.ClannItems.AsQueryable();
     }
 
-    public async Task<ClannItem> GetClannItemByClannId(Guid id)
+    public async Task<List<ClannItem>> GetClannItemByClannId(Guid id)
     {
-        return await _context.ClannItems.FirstOrDefaultAsync(i => i.ClannId == id);
+        return await _context.ClannItems.Where(i => i.ClannId == id).ToListAsync();
     }
 
     public async Task<ClannItem> GetClannItemByUserId(Guid id)

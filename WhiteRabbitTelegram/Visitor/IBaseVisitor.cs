@@ -17,5 +17,6 @@ namespace WhiteRabbitTelegram.Visitor
         Task Visit(AllUsersHandler handler);
         Task Visit(CreateClannHandler handler);
         Task Visit(JoinClannHandler handler);
+        Task Visit(InformationAboutClannHandler handler);
     }
 }

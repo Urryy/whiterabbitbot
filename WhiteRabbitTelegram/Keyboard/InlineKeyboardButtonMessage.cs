@@ -134,7 +134,7 @@ public static class InlineKeyboardButtonMessage
         }
         : new[]
         {
-            InlineKeyboardButton.WithCallbackData("Создать клан", UserCommands.ConfirmCreateClannCommand)
+            InlineKeyboardButton.WithCallbackData("Создать клан", UserCommands.CreateClannCommand)
         },
         new[]
         {

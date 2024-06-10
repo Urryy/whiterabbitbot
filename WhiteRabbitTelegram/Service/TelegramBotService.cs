@@ -194,18 +194,27 @@ public class TelegramBotService : ITelegramBotService
             {
                 await bot.SendMessage(upd, user, "Для создание клана потребуется 30 WB токенов\n\n", true, InlineKeyboardButtonMessage.GetButtonCreateClann());
                 user.LastCommand = user.CurrentCommand;
-                user.CurrentCommand = UserCommands.ConnectNewWalletAddressCommand;
+                user.CurrentCommand = UserCommands.CreateClannCommand;
             }
             else if(text == UserCommands.ConfirmCreateClannCommand)
             {
                 var handler = new CreateClannHandler(user, bot, upd);
                 await handler.Accept(_visitor);
                 user.LastCommand = user.CurrentCommand;
-                user.CurrentCommand = UserCommands.ConnectNewWalletAddressCommand;
+                user.CurrentCommand = UserCommands.ConfirmCreateClannCommand;
             }
             else if(text.Contains("start") && text.Contains("clann"))
             {
-
+                var handler = new JoinClannHandler(user, bot, upd, text);
+                await handler.Accept(_visitor);
+                await bot.SendMessage(upd, user, BotCommands.CardMainMenuCommand, false, InlineKeyboardButtonMessage.GetButtonsMainMenu(user.Role));
+            }
+            else if(text == UserCommands.InformationAboutClannCommand)
+            {
+                var handler = new InformationAboutClannHandler(user, bot, upd);
+                await handler.Accept(_visitor);
+                user.LastCommand = user.CurrentCommand;
+                user.CurrentCommand = UserCommands.InformationAboutClannCommand;
             }
 
             user.TelegramId = chatId;

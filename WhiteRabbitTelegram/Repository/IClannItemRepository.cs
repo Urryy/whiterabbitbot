@@ -9,5 +9,5 @@ public interface IClannItemRepository
     Task RemoveClannItem(Entity.ClannItem ClannItem);
     Task UpdateClannItem(Entity.ClannItem ClannItem);
     Task<Entity.ClannItem> GetClannItemByUserId(Guid id);
-    Task<Entity.ClannItem> GetClannItemByClannId(Guid id);
+    Task<List<Entity.ClannItem>> GetClannItemByClannId(Guid id);
 }

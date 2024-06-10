@@ -28,6 +28,8 @@ builder.Services.AddTransient<ITokenWCRepository, TokenWCRepository>();
 builder.Services.AddTransient<IBaseVisitor, BaseVisitor>();
 builder.Services.AddTransient<IHttpClientService, HttpClientService>();
 builder.Services.AddTransient<ICronJobService, CronJobService>();
+builder.Services.AddTransient<IClannRepository, ClannRepository>();
+builder.Services.AddTransient<IClannItemRepository, ClannItemRepository>();
 
 builder.Services.AddMemoryCache();
 

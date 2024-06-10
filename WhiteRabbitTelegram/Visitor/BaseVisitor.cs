@@ -145,10 +145,13 @@ public class BaseVisitor : IBaseVisitor
                     if (clann != null)
                     {
                         var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
                         var owner = await userRepository.GetUserById(clann.OwnerId);
-                        var tokenForOwner = (handler.user.CountNFT != null && handler.user.CountNFT > 0) ? (tokens * (decimal)0.1) : (tokens * (decimal)0.05);
+                        var tokenForOwner = (handler.user.CountNFT != null && handler.user.CountNFT > 0) 
+                            ? (tokens * (decimal)0.1) : (tokens * (decimal)0.05);
                         await repositoryWB.AddTokenWC(new TokenWС(tokenForOwner, owner.TelegramWallet!));
-                        tokens = tokens - tokenForOwner;
+                        clannItem.EarnedCoins += tokenForOwner;
+                        await clannItemRepository.UpdateClannItem(clannItem);
                     }
                 }
 
@@ -177,10 +180,13 @@ public class BaseVisitor : IBaseVisitor
                         if (clann != null)
                         {
                             var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
                             var owner = await userRepository.GetUserById(clann.OwnerId);
-                            var tokenForOwner = (handler.user.CountNFT != null && handler.user.CountNFT > 0) ? (tokens * (decimal)0.1) : (tokens * (decimal)0.05);
+                            var tokenForOwner = (handler.user.CountNFT != null && handler.user.CountNFT > 0)
+                                ? (tokens * (decimal)0.1) : (tokens * (decimal)0.05);
                             await repositoryWB.AddTokenWC(new TokenWС(tokenForOwner, owner.TelegramWallet!));
-                            tokens = tokens - tokenForOwner;
+                            clannItem.EarnedCoins += tokenForOwner;
+                            await clannItemRepository.UpdateClannItem(clannItem);
                         }
                     }
 
@@ -473,6 +479,7 @@ public class BaseVisitor : IBaseVisitor
                     var ostatokSumi = 30 - (sumOfTokens - token.Tokens);
                     var newSum = token.Tokens - ostatokSumi;
                     await tokenRepository.AddTokenWC(new TokenWС(newSum, handler.user.TelegramWallet));
+                    tokensToRemove.Add(token);
                     break;
                 }
                 else
@@ -488,5 +495,42 @@ public class BaseVisitor : IBaseVisitor
     public async Task Visit(JoinClannHandler handler)
     {
         await JoinClann(handler.user, handler.text);
+    }
+
+    public async Task Visit(InformationAboutClannHandler handler)
+    {
+        var chatId = await handler.upd.GetChatId();
+        using (var scope = _srvcProvider.CreateScope())
+        {
+            var clanRepository = scope.ServiceProvider.GetRequiredService<IClannRepository>();
+            var clann = await clanRepository.GetClannByOwnerId(handler.user.Id);
+            if (clann != null)
+            {
+                var strBuilder = new StringBuilder();
+                var clannItemRepository = scope.ServiceProvider.GetRequiredService<IClannItemRepository>();
+                var clannItems = await clannItemRepository.GetClannItemByClannId(clann.Id);
+
+                strBuilder.AppendLine("Информацие о вашем клане:\n");
+                strBuilder.AppendLine($"Ссылка для вступления в клан - https://t.me/TelChannelCheatingBot?start=clann{clann.RefLink}\n");
+                strBuilder.AppendLine("Пользователи: ");
+                if (clannItems.Count != 0)
+                {
+                    
+                    var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+                    strBuilder.Append($"{clannItems.Count}\n\n");
+                    strBuilder.AppendLine("Топ 10 пользователей по добыче монет");
+                    foreach (var item in clannItems.OrderByDescending(i => i.EarnedCoins))
+                    {
+                        var user = await userRepository.GetUserById(item.UserId);
+                        strBuilder.AppendLine($"- {user.Name} | {item.EarnedCoins}");
+                    }
+                }
+                else
+                {
+                    strBuilder.AppendLine("В данный момент в вашем клане нету пользователей");
+                }
+                await handler.bot.SendMessage(handler.upd, handler.user, strBuilder.ToString(), true, InlineKeyboardButtonMessage.GetButtonBackIntoPersonalAccount());
+            }
+        }
     }
 }
