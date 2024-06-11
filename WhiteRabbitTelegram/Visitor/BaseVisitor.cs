@@ -116,7 +116,7 @@ public class BaseVisitor : IBaseVisitor
                 var userIsInClann = await clannItemRepository.GetClannItemByUserId(user.Id);
                 if (clannByRefLink != null && userIsInClann == null)
                 {
-                    var item = new ClannItem(user.Id, clannByRefLink.Id);
+                    var item = new ClannItem(user.Id, clannByRefLink.Id, decimal.Zero);
                     await clannItemRepository.AddClannItem(item);
                 }
             }
@@ -150,7 +150,7 @@ public class BaseVisitor : IBaseVisitor
                         var tokenForOwner = (handler.user.CountNFT != null && handler.user.CountNFT > 0) 
                             ? (tokens * (decimal)0.1) : (tokens * (decimal)0.05);
                         await repositoryWB.AddTokenWC(new TokenWС(tokenForOwner, owner.TelegramWallet!));
-                        clannItem.EarnedCoins += tokenForOwner;
+                        clannItem.EarnedCoins = decimal.Add(tokenForOwner, clannItem.EarnedCoins);
                         await clannItemRepository.UpdateClannItem(clannItem);
                     }
                 }
@@ -185,7 +185,7 @@ public class BaseVisitor : IBaseVisitor
                             var tokenForOwner = (handler.user.CountNFT != null && handler.user.CountNFT > 0)
                                 ? (tokens * (decimal)0.1) : (tokens * (decimal)0.05);
                             await repositoryWB.AddTokenWC(new TokenWС(tokenForOwner, owner.TelegramWallet!));
-                            clannItem.EarnedCoins += tokenForOwner;
+                            clannItem.EarnedCoins = decimal.Add(tokenForOwner, clannItem.EarnedCoins);
                             await clannItemRepository.UpdateClannItem(clannItem);
                         }
                     }
@@ -510,19 +510,23 @@ public class BaseVisitor : IBaseVisitor
                 var clannItemRepository = scope.ServiceProvider.GetRequiredService<IClannItemRepository>();
                 var clannItems = await clannItemRepository.GetClannItemByClannId(clann.Id);
 
-                strBuilder.AppendLine("Информацие о вашем клане:\n");
-                strBuilder.AppendLine($"Ссылка для вступления в клан - https://t.me/TelChannelCheatingBot?start=clann{clann.RefLink}\n");
-                strBuilder.AppendLine("Пользователи: ");
+                strBuilder.AppendLine("Информацие о вашем клане:🐇\n");
+                strBuilder.AppendLine($"Ссылка для вступления в клан - https://t.me/RabbitClubBot?start=clann{clann.RefLink}\n");
+                strBuilder.Append("Пользователи: ");
                 if (clannItems.Count != 0)
                 {
                     
                     var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                     strBuilder.Append($"{clannItems.Count}\n\n");
-                    strBuilder.AppendLine("Топ 10 пользователей по добыче монет");
+                    strBuilder.AppendLine("🚀 Топ 10 пользователей по добыче монет 🚀");
+                    int count = 0;
                     foreach (var item in clannItems.OrderByDescending(i => i.EarnedCoins))
                     {
+                        if (count >= 10)
+                            break;
                         var user = await userRepository.GetUserById(item.UserId);
                         strBuilder.AppendLine($"- {user.Name} | {item.EarnedCoins}");
+                        count++;
                     }
                 }
                 else
