@@ -157,7 +157,7 @@ public class BaseVisitor : IBaseVisitor
 
                 var token = new TokenWС(tokens, handler.user.TelegramWallet!);
                 await repositoryWB.AddTokenWC(token);
-                await handler.bot.AnswerCallbackQueryAsync(chatId, $"Поздравляем!\n\nВы заработали свои первые {token.Tokens.ToString()} WB coins!", showAlert: true);
+                await handler.bot.AnswerCallbackQueryAsync(chatId, $"Поздравляем!\n\nВы заработали свои первые {token.Tokens.ToString()} WC coins!", showAlert: true);
                 handler.user.DateUpdated = DateTime.Now;
                 handler.user.IsSendedNotification = false;
             }
@@ -192,7 +192,7 @@ public class BaseVisitor : IBaseVisitor
 
                     var token = new TokenWС(tokens, handler.user.TelegramWallet!);
                     await repositoryWB.AddTokenWC(token);
-                    await handler.bot.AnswerCallbackQueryAsync(chatId, $"Вы получили {token.Tokens.ToString()} WB coins!", showAlert: true);
+                    await handler.bot.AnswerCallbackQueryAsync(chatId, $"Вы получили {token.Tokens.ToString()} WC coins!", showAlert: true);
                     handler.user.DateUpdated = DateTime.Now;
                     handler.user.IsSendedNotification = false;
                 }
@@ -326,7 +326,7 @@ public class BaseVisitor : IBaseVisitor
             var nftsByWallet = (await nftRepository.GetNFTsByWallet(handler.user.TelegramWallet)).Count;
             var message = $"В вашем профиле:\n\n" +
                 $"- {nftsByWallet} NFT\n" +
-                $"- Добыто {tokensByWallet.Select(i => i.Tokens).Sum()} WB токенов\n" +
+                $"- Добыто {tokensByWallet.Select(i => i.Tokens).Sum()} WC токенов\n" +
                 $"- Куплено {Math.Round(handler.user.TokensWhiteCoin, 2)} WhiteCoins\n\n" +
                 $"Количество пользователей присоединившихся по вашей реферальной ссылке: {handler.user.Referrals}";
 
@@ -362,7 +362,7 @@ public class BaseVisitor : IBaseVisitor
                     foreach (var user in paginatedUsers.Items)
                     {
                         var tokens = await tokenRepo.GetTokenWCByWallet(user.TelegramWallet);
-                        strBuilder.AppendLine($"{count}. {user.Name} | {user.CountNFT ?? 0} NFT | Добыто {tokens.Select(i => i.Tokens).Sum()} WB | Куплено {user.TokensWhiteCoin} WC");
+                        strBuilder.AppendLine($"{count}. {user.Name} | {user.CountNFT ?? 0} NFT | Добыто {tokens.Select(i => i.Tokens).Sum()} WC | Куплено {user.TokensWhiteCoin} WC");
                         count++;
                     }
 
@@ -461,7 +461,7 @@ public class BaseVisitor : IBaseVisitor
             if(sumOfTokens < 30)
             {
                 var callId = await handler.upd.GetCallbackQueryId();
-                await handler.bot.AnswerCallbackQueryAsync(callId, $"Для создания клана требуется добыть 30 WB токенов", showAlert: true);
+                await handler.bot.AnswerCallbackQueryAsync(callId, $"Для создания клана требуется добыть 30 WC токенов", showAlert: true);
                 return;
             }
 
